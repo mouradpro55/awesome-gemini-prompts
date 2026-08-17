@@ -7,72 +7,126 @@ class App(ctk.CTk):
         super().__init__()
 
         # Window settings
-        self.title("Test de Débit Internet - DTN El Menia")
-        self.geometry("600x500")
+        self.title("DTN Speedtest - Édition 2026")
+        self.geometry("800x500")
         self.resizable(False, False)
 
-        ctk.set_appearance_mode("System")
+        # Modern Appearance
+        ctk.set_appearance_mode("Dark")
         ctk.set_default_color_theme("blue")
 
-        # Header
-        self.title_label = ctk.CTkLabel(self, text="Test de Vitesse Internet", font=ctk.CTkFont(size=24, weight="bold"))
-        self.title_label.pack(pady=20)
+        # Configure grid layout
+        self.grid_columnconfigure(1, weight=1)
+        self.grid_rowconfigure(0, weight=1)
 
-        self.subtitle_label = ctk.CTkLabel(self, text="Direction des Transmissions Nationales (DTN) - Wilaya d'El Menia", font=ctk.CTkFont(size=14))
-        self.subtitle_label.pack(pady=5)
+        # --- Sidebar ---
+        self.sidebar_frame = ctk.CTkFrame(self, width=220, corner_radius=0)
+        self.sidebar_frame.grid(row=0, column=0, sticky="nsew")
+        self.sidebar_frame.grid_rowconfigure(4, weight=1)
 
-        # Results Frame
-        self.results_frame = ctk.CTkFrame(self)
-        self.results_frame.pack(pady=30, padx=40, fill="both", expand=True)
+        self.logo_label = ctk.CTkLabel(self.sidebar_frame, text="DTN\nSpeedtest", font=ctk.CTkFont(size=28, weight="bold"))
+        self.logo_label.grid(row=0, column=0, padx=20, pady=(40, 10))
 
-        self.ping_label = ctk.CTkLabel(self.results_frame, text="Ping : -- ms", font=ctk.CTkFont(size=18))
-        self.ping_label.pack(pady=10)
+        self.subtitle_label = ctk.CTkLabel(self.sidebar_frame, text="Wilaya d'El Menia", font=ctk.CTkFont(size=14, slant="italic", text_color="gray"))
+        self.subtitle_label.grid(row=1, column=0, padx=20, pady=(0, 30))
 
-        self.download_label = ctk.CTkLabel(self.results_frame, text="Téléchargement : -- Mbps", font=ctk.CTkFont(size=18))
-        self.download_label.pack(pady=10)
+        self.start_button = ctk.CTkButton(self.sidebar_frame, text="DÉMARRER", font=ctk.CTkFont(size=16, weight="bold"), height=45, command=self.start_test_thread)
+        self.start_button.grid(row=2, column=0, padx=20, pady=10)
 
-        self.upload_label = ctk.CTkLabel(self.results_frame, text="Envoi : -- Mbps", font=ctk.CTkFont(size=18))
-        self.upload_label.pack(pady=10)
+        self.status_label = ctk.CTkLabel(self.sidebar_frame, text="Prêt", font=ctk.CTkFont(size=14))
+        self.status_label.grid(row=3, column=0, padx=20, pady=10)
 
-        self.server_label = ctk.CTkLabel(self.results_frame, text="Serveur : --", font=ctk.CTkFont(size=14))
-        self.server_label.pack(pady=10)
+        self.footer_label = ctk.CTkLabel(self.sidebar_frame, text="Dirigé par:\nM. Mesbah Mourad", justify="center", font=ctk.CTkFont(size=12))
+        self.footer_label.grid(row=4, column=0, padx=20, pady=20, sticky="s")
 
-        # Start Button
-        self.start_button = ctk.CTkButton(self, text="Démarrer le Test", font=ctk.CTkFont(size=16, weight="bold"), command=self.start_test_thread)
-        self.start_button.pack(pady=10)
+        # --- Main Content ---
+        self.main_frame = ctk.CTkFrame(self, fg_color="transparent")
+        self.main_frame.grid(row=0, column=1, sticky="nsew", padx=20, pady=20)
 
-        # Footer (Credits)
-        self.footer_label = ctk.CTkLabel(self, text="Idée et Supervision : Mr. Mesbah Mourad", font=ctk.CTkFont(size=12))
-        self.footer_label.pack(side="bottom", pady=10)
+        self.main_frame.grid_columnconfigure((0, 1, 2), weight=1)
+        self.main_frame.grid_rowconfigure(1, weight=1)
+
+        # Title
+        self.header_label = ctk.CTkLabel(self.main_frame, text="Tableau de Bord", font=ctk.CTkFont(size=32, weight="bold"))
+        self.header_label.grid(row=0, column=0, columnspan=3, pady=(10, 30), sticky="w")
+
+        # Cards Frame (Ping, Download, Upload)
+        # Ping Card
+        self.ping_card = ctk.CTkFrame(self.main_frame, corner_radius=15, fg_color="#2b2b2b")
+        self.ping_card.grid(row=1, column=0, padx=10, pady=10, sticky="nsew")
+        self.ping_title = ctk.CTkLabel(self.ping_card, text="PING", font=ctk.CTkFont(size=16, text_color="gray", weight="bold"))
+        self.ping_title.pack(pady=(30, 5))
+        self.ping_value = ctk.CTkLabel(self.ping_card, text="--", font=ctk.CTkFont(size=40, weight="bold", text_color="#00a8ff"))
+        self.ping_value.pack(pady=5)
+        self.ping_unit = ctk.CTkLabel(self.ping_card, text="ms", font=ctk.CTkFont(size=14, text_color="gray"))
+        self.ping_unit.pack(pady=(0, 20))
+
+        # Download Card
+        self.dl_card = ctk.CTkFrame(self.main_frame, corner_radius=15, fg_color="#2b2b2b")
+        self.dl_card.grid(row=1, column=1, padx=10, pady=10, sticky="nsew")
+        self.dl_title = ctk.CTkLabel(self.dl_card, text="TÉLÉCHARGEMENT", font=ctk.CTkFont(size=14, text_color="gray", weight="bold"))
+        self.dl_title.pack(pady=(30, 5))
+        self.dl_value = ctk.CTkLabel(self.dl_card, text="--", font=ctk.CTkFont(size=40, weight="bold", text_color="#4cd137"))
+        self.dl_value.pack(pady=5)
+        self.dl_unit = ctk.CTkLabel(self.dl_card, text="Mbps", font=ctk.CTkFont(size=14, text_color="gray"))
+        self.dl_unit.pack(pady=(0, 20))
+
+        # Upload Card
+        self.ul_card = ctk.CTkFrame(self.main_frame, corner_radius=15, fg_color="#2b2b2b")
+        self.ul_card.grid(row=1, column=2, padx=10, pady=10, sticky="nsew")
+        self.ul_title = ctk.CTkLabel(self.ul_card, text="ENVOI", font=ctk.CTkFont(size=16, text_color="gray", weight="bold"))
+        self.ul_title.pack(pady=(30, 5))
+        self.ul_value = ctk.CTkLabel(self.ul_card, text="--", font=ctk.CTkFont(size=40, weight="bold", text_color="#9c88ff"))
+        self.ul_value.pack(pady=5)
+        self.ul_unit = ctk.CTkLabel(self.ul_card, text="Mbps", font=ctk.CTkFont(size=14, text_color="gray"))
+        self.ul_unit.pack(pady=(0, 20))
+
+        # Server Info & Progress Bar
+        self.bottom_frame = ctk.CTkFrame(self.main_frame, fg_color="transparent")
+        self.bottom_frame.grid(row=2, column=0, columnspan=3, sticky="ew", pady=(30, 0))
+
+        self.server_label = ctk.CTkLabel(self.bottom_frame, text="Serveur : En attente...", font=ctk.CTkFont(size=16))
+        self.server_label.pack(anchor="w", pady=(0, 10))
+
+        self.progress_bar = ctk.CTkProgressBar(self.bottom_frame, mode="indeterminate", height=10, corner_radius=5)
+        self.progress_bar.pack(fill="x", pady=10)
+        self.progress_bar.set(0)
 
     def start_test_thread(self):
-        self.start_button.configure(state="disabled", text="Test en cours...")
-        self.ping_label.configure(text="Ping : -- ms")
-        self.download_label.configure(text="Téléchargement : -- Mbps")
-        self.upload_label.configure(text="Envoi : -- Mbps")
-        self.server_label.configure(text="Serveur : --")
+        self.start_button.configure(state="disabled")
+        self.status_label.configure(text="Test en cours...", text_color="#fbc531")
 
-        # Run in a separate thread to not freeze the GUI
-        threading.Thread(target=self.run_test).start()
+        self.ping_value.configure(text="--")
+        self.dl_value.configure(text="--")
+        self.ul_value.configure(text="--")
+        self.server_label.configure(text="Serveur : Recherche en cours...")
+
+        self.progress_bar.start()
+
+        # Run in a separate thread
+        threading.Thread(target=self.run_test, daemon=True).start()
 
     def run_test(self):
         result = test_speed()
         self.after(0, self.update_gui_results, result)
 
     def update_gui_results(self, result):
+        self.progress_bar.stop()
+        self.progress_bar.set(1)
+
         if result["success"]:
-            self.ping_label.configure(text=f"Ping : {result['ping_ms']} ms")
-            self.download_label.configure(text=f"Téléchargement : {result['download_mbps']} Mbps")
-            self.upload_label.configure(text=f"Envoi : {result['upload_mbps']} Mbps")
+            self.ping_value.configure(text=f"{result['ping_ms']}")
+            self.dl_value.configure(text=f"{result['download_mbps']}")
+            self.ul_value.configure(text=f"{result['upload_mbps']}")
             self.server_label.configure(text=f"Serveur : {result['server_sponsor']} ({result['server_name']})")
 
-            # Save to history
+            self.status_label.configure(text="Terminé", text_color="#4cd137")
             save_to_history(result)
         else:
-            self.ping_label.configure(text="Erreur de Connexion")
-            self.download_label.configure(text=result["error"])
+            self.status_label.configure(text="Erreur", text_color="#e84118")
+            self.server_label.configure(text=f"Erreur : {result['error']}")
 
-        self.start_button.configure(state="normal", text="Recommencer le Test")
+        self.start_button.configure(state="normal", text="RECOMMENCER")
 
 if __name__ == "__main__":
     app = App()
