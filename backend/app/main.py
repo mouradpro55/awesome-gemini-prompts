@@ -3,10 +3,14 @@ from app.api.routes import auth
 from app.db.database import engine, Base
 from app.core.config import settings
 
-# Create all tables in the database (for testing/development purposes)
-Base.metadata.create_all(bind=engine)
-
 app = FastAPI(title=settings.PROJECT_NAME)
+
+@app.on_event("startup")
+def on_startup():
+    try:
+        Base.metadata.create_all(bind=engine)
+    except Exception as e:
+        print(f"Error creating tables: {e}")
 
 app.include_router(auth.router, prefix="/api/auth", tags=["auth"])
 
