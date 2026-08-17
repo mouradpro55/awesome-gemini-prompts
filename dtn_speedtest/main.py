@@ -27,7 +27,7 @@ class App(ctk.CTk):
         self.logo_label = ctk.CTkLabel(self.sidebar_frame, text="DTN\nSpeedtest", font=ctk.CTkFont(size=28, weight="bold"))
         self.logo_label.grid(row=0, column=0, padx=20, pady=(40, 10))
 
-        self.subtitle_label = ctk.CTkLabel(self.sidebar_frame, text="Wilaya d'El Menia", font=ctk.CTkFont(size=14, slant="italic", text_color="gray"))
+        self.subtitle_label = ctk.CTkLabel(self.sidebar_frame, text="Wilaya d'El Menia", font=ctk.CTkFont(size=14, slant="italic"), text_color="gray")
         self.subtitle_label.grid(row=1, column=0, padx=20, pady=(0, 30))
 
         self.start_button = ctk.CTkButton(self.sidebar_frame, text="DÉMARRER", font=ctk.CTkFont(size=16, weight="bold"), height=45, command=self.start_test_thread)
@@ -54,31 +54,31 @@ class App(ctk.CTk):
         # Ping Card
         self.ping_card = ctk.CTkFrame(self.main_frame, corner_radius=15, fg_color="#2b2b2b")
         self.ping_card.grid(row=1, column=0, padx=10, pady=10, sticky="nsew")
-        self.ping_title = ctk.CTkLabel(self.ping_card, text="PING", font=ctk.CTkFont(size=16, text_color="gray", weight="bold"))
+        self.ping_title = ctk.CTkLabel(self.ping_card, text="PING", font=ctk.CTkFont(size=16, weight="bold"), text_color="gray")
         self.ping_title.pack(pady=(30, 5))
-        self.ping_value = ctk.CTkLabel(self.ping_card, text="--", font=ctk.CTkFont(size=40, weight="bold", text_color="#00a8ff"))
+        self.ping_value = ctk.CTkLabel(self.ping_card, text="--", font=ctk.CTkFont(size=40, weight="bold"), text_color="#00a8ff")
         self.ping_value.pack(pady=5)
-        self.ping_unit = ctk.CTkLabel(self.ping_card, text="ms", font=ctk.CTkFont(size=14, text_color="gray"))
+        self.ping_unit = ctk.CTkLabel(self.ping_card, text="ms", font=ctk.CTkFont(size=14), text_color="gray")
         self.ping_unit.pack(pady=(0, 20))
 
         # Download Card
         self.dl_card = ctk.CTkFrame(self.main_frame, corner_radius=15, fg_color="#2b2b2b")
         self.dl_card.grid(row=1, column=1, padx=10, pady=10, sticky="nsew")
-        self.dl_title = ctk.CTkLabel(self.dl_card, text="TÉLÉCHARGEMENT", font=ctk.CTkFont(size=14, text_color="gray", weight="bold"))
+        self.dl_title = ctk.CTkLabel(self.dl_card, text="TÉLÉCHARGEMENT", font=ctk.CTkFont(size=14, weight="bold"), text_color="gray")
         self.dl_title.pack(pady=(30, 5))
-        self.dl_value = ctk.CTkLabel(self.dl_card, text="--", font=ctk.CTkFont(size=40, weight="bold", text_color="#4cd137"))
+        self.dl_value = ctk.CTkLabel(self.dl_card, text="--", font=ctk.CTkFont(size=40, weight="bold"), text_color="#4cd137")
         self.dl_value.pack(pady=5)
-        self.dl_unit = ctk.CTkLabel(self.dl_card, text="Mbps", font=ctk.CTkFont(size=14, text_color="gray"))
+        self.dl_unit = ctk.CTkLabel(self.dl_card, text="Mbps", font=ctk.CTkFont(size=14), text_color="gray")
         self.dl_unit.pack(pady=(0, 20))
 
         # Upload Card
         self.ul_card = ctk.CTkFrame(self.main_frame, corner_radius=15, fg_color="#2b2b2b")
         self.ul_card.grid(row=1, column=2, padx=10, pady=10, sticky="nsew")
-        self.ul_title = ctk.CTkLabel(self.ul_card, text="ENVOI", font=ctk.CTkFont(size=16, text_color="gray", weight="bold"))
+        self.ul_title = ctk.CTkLabel(self.ul_card, text="ENVOI", font=ctk.CTkFont(size=16, weight="bold"), text_color="gray")
         self.ul_title.pack(pady=(30, 5))
-        self.ul_value = ctk.CTkLabel(self.ul_card, text="--", font=ctk.CTkFont(size=40, weight="bold", text_color="#9c88ff"))
+        self.ul_value = ctk.CTkLabel(self.ul_card, text="--", font=ctk.CTkFont(size=40, weight="bold"), text_color="#9c88ff")
         self.ul_value.pack(pady=5)
-        self.ul_unit = ctk.CTkLabel(self.ul_card, text="Mbps", font=ctk.CTkFont(size=14, text_color="gray"))
+        self.ul_unit = ctk.CTkLabel(self.ul_card, text="Mbps", font=ctk.CTkFont(size=14), text_color="gray")
         self.ul_unit.pack(pady=(0, 20))
 
         # Server Info & Progress Bar
