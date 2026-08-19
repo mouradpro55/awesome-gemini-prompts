@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ملكة كوكب برق البرق</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: #000;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            overflow: hidden;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        #game-container {
+            width: 100%;
+            height: 100%;
+            max-width: 800px;
+            max-height: 600px;
+            position: relative;
+        }
+        /* UI Overlays */
+        .overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 10;
+        }
+        .hidden {
+            display: none !important;
+        }
+        .interactive {
+            pointer-events: auto;
+        }
+        /* Question Modal */
+        #question-modal {
+            background-color: rgba(255, 20, 147, 0.9);
+            border: 4px solid #FFD700;
+            border-radius: 20px;
+            padding: 30px;
+            text-align: center;
+            color: white;
+            box-shadow: 0 0 20px #FFD700;
+            max-width: 80%;
+        }
+        #question-modal h2 {
+            margin-top: 0;
+            text-shadow: 2px 2px 4px #000;
+        }
+        .btn-answer {
+            background: #FFD700;
+            color: #C71585;
+            border: none;
+            padding: 10px 20px;
+            margin: 10px;
+            border-radius: 10px;
+            font-size: 18px;
+            cursor: pointer;
+            font-weight: bold;
+            box-shadow: 2px 2px 5px rgba(0,0,0,0.3);
+            transition: transform 0.1s;
+        }
+        .btn-answer:active {
+            transform: scale(0.95);
+        }
+        /* Citizenship Card Form */
+        #card-form-modal {
+            background: linear-gradient(135deg, #FF69B4, #C71585);
+            border: 5px solid #FFD700;
+            border-radius: 20px;
+            padding: 20px;
+            text-align: center;
+            color: white;
+            box-shadow: 0 0 30px #FFD700;
+            width: 90%;
+            max-width: 400px;
+        }
+        #card-form-modal input[type="text"], #card-form-modal input[type="file"] {
+            width: 90%;
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 10px;
+            border: 2px solid #FFD700;
+            font-size: 16px;
+        }
+        .btn-generate {
+            background: #FFD700;
+            color: #C71585;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 30px;
+            font-size: 20px;
+            cursor: pointer;
+            font-weight: bold;
+            margin-top: 15px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.5);
+        }
+        /* Flash effect for queen */
+        #flash-overlay {
+            background-color: rgba(255, 20, 147, 0.6);
+            transition: opacity 0.2s;
+            opacity: 0;
+        }
+        #flash-overlay.flash {
+            opacity: 1;
+        }
+
+        #card-result-modal {
+            background: transparent;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        #card-canvas-container {
+            border: 4px solid #FFD700;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 0 20px #FFD700;
+            background: white;
+        }
+        #btn-download, #btn-restart {
+            margin-top: 10px;
+            background: #FFD700;
+            color: #C71585;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 10px;
+            font-size: 16px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div id="game-container">
+        <!-- Phaser Game will be injected here -->
+
+        <!-- UI Overlays -->
+        <div id="flash-overlay" class="overlay hidden"></div>
+
+        <!-- Question Modal -->
+        <div id="ui-question" class="overlay hidden interactive">
+            <div id="question-modal">
+                <h2 id="q-text">مراسيم الملكة!</h2>
+                <div id="q-answers">
+                    <!-- Buttons will be injected here -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Citizenship Card Form -->
+        <div id="ui-card-form" class="overlay hidden interactive">
+            <div id="card-form-modal">
+                <h2>أنت الآن مواطن في كوكب برق البرق!</h2>
+                <p>النتيجة: <span id="final-score">0</span></p>
+                <input type="text" id="citizen-name" placeholder="أدخل اسمك الكريم..." maxlength="20">
+                <p>ارفع صورتك الشخصية للبطاقة:</p>
+                <input type="file" id="citizen-photo" accept="image/*">
+                <button id="btn-generate-card" class="btn-generate">إصدار البطاقة</button>
+            </div>
+        </div>
+
+        <!-- Generated Card Result -->
+        <div id="ui-card-result" class="overlay hidden interactive">
+            <div id="card-result-modal">
+                <p id="share-text" style="font-size: 16px; background: rgba(0,0,0,0.8); color: white; padding: 10px; border-radius: 5px; margin-bottom: 10px; text-align: center; direction: rtl; border: 1px solid #FFD700;"></p>
+                <div id="card-canvas-container">
+                    <canvas id="card-canvas"></canvas>
+                </div>
+                <button id="btn-download">تحميل البطاقة ومشاركتها</button>
+                <button id="btn-restart">محاولة أخرى يا عريس</button>
+            </div>
+        </div>
+    </div>
+
+    <script type="module" src="/src/main.js"></script>
+</body>
+</html>
