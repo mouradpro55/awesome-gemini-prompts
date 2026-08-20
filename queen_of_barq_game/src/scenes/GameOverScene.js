@@ -29,6 +29,8 @@ export default class GameOverScene extends Phaser.Scene {
             const age = document.getElementById('citizen-age').value || '??';
             const gender = document.getElementById('citizen-gender').value || 'رجل';
             const city = document.getElementById('citizen-city').value || 'المجهول';
+            const email = document.getElementById('citizen-email').value || 'لا يوجد';
+            const whatsapp = document.getElementById('citizen-whatsapp').value || 'لا يوجد';
             const fileInput = document.getElementById('citizen-photo');
             let photoUrl = null;
 
@@ -37,7 +39,7 @@ export default class GameOverScene extends Phaser.Scene {
             }
 
             uiForm.classList.add('hidden');
-            this.generateCard({name, age, gender, city, score: this.finalScore, photoUrl});
+            this.generateCard({name, age, gender, city, email, whatsapp, score: this.finalScore, photoUrl});
         });
 
         const restartBtn = document.getElementById('btn-restart');
@@ -60,6 +62,51 @@ export default class GameOverScene extends Phaser.Scene {
             link.href = canvas.toDataURL();
             link.click();
         });
+
+
+        const sendDiscordBtn = document.getElementById('btn-send-discord');
+        const newSendBtn = sendDiscordBtn.cloneNode(true);
+        sendDiscordBtn.parentNode.replaceChild(newSendBtn, sendDiscordBtn);
+
+        newSendBtn.addEventListener('click', () => {
+            const canvas = document.getElementById('card-canvas');
+            const discordWebhookUrl = 'YOUR_DISCORD_WEBHOOK_URL_HERE'; // User needs to replace this
+
+            if (discordWebhookUrl === 'YOUR_DISCORD_WEBHOOK_URL_HERE') {
+                alert('لم يتم إعداد رابط الـ Webhook الخاص بـ Discord بعد! يرجى التواصل مع الإدارة.');
+                return;
+            }
+
+            newSendBtn.innerText = 'جاري الإرسال...';
+            newSendBtn.disabled = true;
+
+            canvas.toBlob((blob) => {
+                const formData = new FormData();
+                formData.append('file', blob, 'barq_card.png');
+                formData.append('payload_json', JSON.stringify({
+                    content: "👑 **طلب انتساب جديد لكوكب برق البرق!** 👑"
+                }));
+
+                fetch(discordWebhookUrl, {
+                    method: 'POST',
+                    body: formData
+                }).then(res => {
+                    if (res.ok) {
+                        alert('تم الإرسال بنجاح!');
+                        newSendBtn.innerText = 'تم الإرسال ✓';
+                    } else {
+                        alert('حدث خطأ أثناء الإرسال.');
+                        newSendBtn.innerText = 'إرسال البطاقة للإدارة';
+                        newSendBtn.disabled = false;
+                    }
+                }).catch(err => {
+                    alert('تعذر الاتصال بالخادم.');
+                    newSendBtn.innerText = 'إرسال البطاقة للإدارة';
+                    newSendBtn.disabled = false;
+                });
+            });
+        });
+
     }
 
     generateCard(data) {
@@ -98,7 +145,10 @@ export default class GameOverScene extends Phaser.Scene {
             ctx.font = '22px Tahoma';
             ctx.fillStyle = '#FF1493';
             ctx.fillText('العمر: ' + data.age + ' | الجنس: ' + data.gender, canvas.width / 2, canvas.height - 90);
-            ctx.fillText('المدينة: ' + data.city, canvas.width / 2, canvas.height - 60);
+            ctx.fillText('المدينة: ' + data.city, canvas.width / 2, canvas.height - 65);
+            ctx.font = '18px Tahoma';
+            ctx.fillStyle = '#FFFFFF';
+            ctx.fillText('✉ ' + data.email + ' | ✆ ' + data.whatsapp, canvas.width / 2, canvas.height - 40);
 
             // Write Score
             ctx.fillStyle = '#FFFFFF';
