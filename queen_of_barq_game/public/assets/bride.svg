@@ -1,0 +1,16 @@
+<svg width="64" height="64" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
+  <!-- Dress -->
+  <path d="M 32 24 L 16 60 L 48 60 Z" fill="#FFFFFF" stroke="#ECECEC" stroke-width="2"/>
+  <!-- Head -->
+  <circle cx="32" cy="14" r="10" fill="#F1C40F"/>
+  <!-- Hair (Veil) -->
+  <path d="M 22 14 Q 32 0 42 14 L 46 40 L 18 40 Z" fill="rgba(255,255,255,0.7)"/>
+  <!-- Eyes -->
+  <circle cx="28" cy="12" r="1.5" fill="#000"/>
+  <circle cx="36" cy="12" r="1.5" fill="#000"/>
+  <!-- Smile -->
+  <path d="M 28 16 Q 32 20 36 16" stroke="#000" stroke-width="1.5" fill="none"/>
+  <!-- Arms -->
+  <path d="M 24 28 Q 16 34 20 40" stroke="#F1C40F" stroke-width="3" fill="none"/>
+  <path d="M 40 28 Q 48 34 44 40" stroke="#F1C40F" stroke-width="3" fill="none"/>
+</svg>
