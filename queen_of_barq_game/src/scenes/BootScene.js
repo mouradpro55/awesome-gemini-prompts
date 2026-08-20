@@ -37,6 +37,7 @@ export default class BootScene extends Phaser.Scene {
             loadingText.destroy();
         });
 
+
         // Load images
         this.load.image('bg_main', '/assets/images1.jpg'); // The palace/queen image
         this.load.image('bg_game', '/assets/images2.jpg'); // Passports/traveling image
@@ -44,6 +45,12 @@ export default class BootScene extends Phaser.Scene {
         // Card templates
         this.load.image('card_template_1', '/assets/images.jpg');
         this.load.image('card_template_2', '/assets/images14.jpg');
+
+        // Characters & Music
+        this.load.image('player_groom', '/assets/groom.svg');
+        this.load.image('player_bride', '/assets/bride.svg');
+        this.load.audio('bgm', '/assets/music.wav');
+
 
         // Generate simple graphics for sprites if not available
         this.generateSprites();

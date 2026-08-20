@@ -21,7 +21,7 @@ export default class MainMenuScene extends Phaser.Scene {
         overlay.fillRect(0, 0, 800, 600);
 
         // Title text
-        this.add.text(400, 150, 'ملكة كوكب برق البرق', {
+        this.add.text(400, 100, 'ملكة كوكب برق البرق', {
             fontFamily: 'Tahoma, Arial',
             fontSize: '64px',
             color: '#FFD700',
@@ -30,42 +30,42 @@ export default class MainMenuScene extends Phaser.Scene {
             shadow: { offsetX: 3, offsetY: 3, color: '#000', blur: 10, fill: true }
         }).setOrigin(0.5);
 
-        this.add.text(400, 220, 'هل أنت جاهز لتلبية الشروط يا عريس؟', {
+        this.add.text(400, 180, 'اختر شخصيتك للانطلاق:', {
             fontFamily: 'Tahoma, Arial',
             fontSize: '28px',
             color: '#FFFFFF',
             shadow: { offsetX: 2, offsetY: 2, color: '#000', blur: 5, fill: true }
         }).setOrigin(0.5);
 
-        // Start Button
-        const startBtnBg = this.add.graphics();
-        startBtnBg.fillStyle(0xFFD700, 1);
-        startBtnBg.fillRoundedRect(300, 350, 200, 60, 16);
+        // Groom Select Button
+        const groomBtnBg = this.add.graphics();
+        groomBtnBg.fillStyle(0xFFD700, 1);
+        groomBtnBg.fillRoundedRect(200, 250, 150, 150, 16);
+        this.add.image(275, 300, 'player_groom').setScale(1.5);
+        this.add.text(275, 370, 'عريس', { fontFamily: 'Tahoma', fontSize: '24px', color: '#C71585', fontStyle: 'bold' }).setOrigin(0.5);
 
-        const startText = this.add.text(400, 380, 'ابدأ الرحلة', {
-            fontFamily: 'Tahoma, Arial',
-            fontSize: '32px',
-            color: '#C71585',
-            fontStyle: 'bold'
-        }).setOrigin(0.5);
+        const groomZone = this.add.zone(275, 325, 150, 150).setInteractive({ useHandCursor: true });
+        groomZone.on('pointerdown', () => this.startGame('groom'));
 
-        // Make button interactive
-        const startBtnZone = this.add.zone(400, 380, 200, 60).setInteractive({ useHandCursor: true });
+        // Bride Select Button
+        const brideBtnBg = this.add.graphics();
+        brideBtnBg.fillStyle(0xFFD700, 1);
+        brideBtnBg.fillRoundedRect(450, 250, 150, 150, 16);
+        this.add.image(525, 300, 'player_bride').setScale(1.5);
+        this.add.text(525, 370, 'عروس', { fontFamily: 'Tahoma', fontSize: '24px', color: '#C71585', fontStyle: 'bold' }).setOrigin(0.5);
 
-        startBtnZone.on('pointerover', () => {
-            startBtnBg.clear();
-            startBtnBg.fillStyle(0xFFFFFF, 1);
-            startBtnBg.fillRoundedRect(300, 350, 200, 60, 16);
-        });
+        const brideZone = this.add.zone(525, 325, 150, 150).setInteractive({ useHandCursor: true });
+        brideZone.on('pointerdown', () => this.startGame('bride'));
 
-        startBtnZone.on('pointerout', () => {
-            startBtnBg.clear();
-            startBtnBg.fillStyle(0xFFD700, 1);
-            startBtnBg.fillRoundedRect(300, 350, 200, 60, 16);
-        });
+        // Hover effects
+        groomZone.on('pointerover', () => { groomBtnBg.clear(); groomBtnBg.fillStyle(0xFFFFFF, 1); groomBtnBg.fillRoundedRect(200, 250, 150, 150, 16); });
+        groomZone.on('pointerout', () => { groomBtnBg.clear(); groomBtnBg.fillStyle(0xFFD700, 1); groomBtnBg.fillRoundedRect(200, 250, 150, 150, 16); });
 
-        startBtnZone.on('pointerdown', () => {
-            this.scene.start('GameScene');
-        });
+        brideZone.on('pointerover', () => { brideBtnBg.clear(); brideBtnBg.fillStyle(0xFFFFFF, 1); brideBtnBg.fillRoundedRect(450, 250, 150, 150, 16); });
+        brideZone.on('pointerout', () => { brideBtnBg.clear(); brideBtnBg.fillStyle(0xFFD700, 1); brideBtnBg.fillRoundedRect(450, 250, 150, 150, 16); });
+    }
+
+    startGame(character) {
+        this.scene.start('GameScene', { character: character });
     }
 }

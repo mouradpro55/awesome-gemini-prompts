@@ -25,7 +25,10 @@ export default class GameOverScene extends Phaser.Scene {
         generateBtn.parentNode.replaceChild(newBtn, generateBtn);
 
         newBtn.addEventListener('click', () => {
-            const name = document.getElementById('citizen-name').value || 'عريس مجهول';
+            const name = document.getElementById('citizen-name').value || 'مواطن مجهول';
+            const age = document.getElementById('citizen-age').value || '??';
+            const gender = document.getElementById('citizen-gender').value || 'رجل';
+            const city = document.getElementById('citizen-city').value || 'المجهول';
             const fileInput = document.getElementById('citizen-photo');
             let photoUrl = null;
 
@@ -34,7 +37,7 @@ export default class GameOverScene extends Phaser.Scene {
             }
 
             uiForm.classList.add('hidden');
-            this.generateCard(name, this.finalScore, photoUrl);
+            this.generateCard({name, age, gender, city, score: this.finalScore, photoUrl});
         });
 
         const restartBtn = document.getElementById('btn-restart');
@@ -59,11 +62,11 @@ export default class GameOverScene extends Phaser.Scene {
         });
     }
 
-    generateCard(name, score, photoUrl) {
+    generateCard(data) {
         const uiResult = document.getElementById('ui-card-result');
         uiResult.classList.remove('hidden');
 
-        const shareText = "لقد تم رفضي من الملكة في كوكب برق البرق برصيد " + score + " نقطة فقط! من يتحداني؟";
+        const shareText = "لقد تم رفضي من الملكة في كوكب برق البرق برصيد " + data.score + " نقطة فقط! من يتحداني؟";
         let pText = document.getElementById('share-text');
         if (pText) {
             pText.innerText = shareText;
@@ -85,37 +88,80 @@ export default class GameOverScene extends Phaser.Scene {
             ctx.font = 'bold 30px Tahoma';
             ctx.textAlign = 'center';
 
+
             // Write Name
-            ctx.fillText(name, canvas.width / 2, canvas.height - 100);
+            ctx.fillStyle = '#C71585';
+            ctx.font = 'bold 30px Tahoma';
+            ctx.fillText(data.name, canvas.width / 2, canvas.height - 130);
+
+            // Draw additional details (Age, Gender, City)
+            ctx.font = '22px Tahoma';
+            ctx.fillStyle = '#FF1493';
+            ctx.fillText('العمر: ' + data.age + ' | الجنس: ' + data.gender, canvas.width / 2, canvas.height - 90);
+            ctx.fillText('المدينة: ' + data.city, canvas.width / 2, canvas.height - 60);
 
             // Write Score
             ctx.fillStyle = '#FFFFFF';
             ctx.font = 'bold 40px Tahoma';
-            ctx.fillText(score.toString(), canvas.width * 0.75, canvas.height / 2);
+            ctx.fillText(data.score.toString(), canvas.width * 0.75, canvas.height / 2 + 30);
 
             // Draw Photo if provided
-            if (photoUrl) {
+            if (data.photoUrl) {
                 const userImg = new Image();
                 userImg.onload = () => {
-                    // Draw circular image on the left side (approximate coordinates)
+                    const centerX = 150;
+                    const centerY = 280;
+                    const radius = 90;
+
                     ctx.save();
                     ctx.beginPath();
-                    // Assuming portrait placeholder is around x: 200, y: 250, radius: 100
-                    ctx.arc(150, 250, 100, 0, Math.PI * 2, true);
+                    ctx.arc(centerX, centerY, radius, 0, Math.PI * 2, true);
                     ctx.closePath();
                     ctx.clip();
-                    ctx.drawImage(userImg, 50, 150, 200, 200); // Scale to fit
+
+                    // Center and crop image dynamically to fill the circle
+                    const aspect = userImg.width / userImg.height;
+                    let drawWidth, drawHeight;
+                    if (aspect > 1) { // Landscape
+                        drawHeight = radius * 2;
+                        drawWidth = drawHeight * aspect;
+                    } else { // Portrait
+                        drawWidth = radius * 2;
+                        drawHeight = drawWidth / aspect;
+                    }
+                    const drawX = centerX - (drawWidth / 2);
+                    const drawY = centerY - (drawHeight / 2);
+
+                    ctx.drawImage(userImg, drawX, drawY, drawWidth, drawHeight);
                     ctx.restore();
 
                     // Draw border around image
                     ctx.beginPath();
-                    ctx.arc(150, 250, 100, 0, Math.PI * 2, true);
+                    ctx.arc(centerX, centerY, radius, 0, Math.PI * 2, true);
                     ctx.lineWidth = 10;
                     ctx.strokeStyle = '#FFD700';
                     ctx.stroke();
                 };
-                userImg.src = photoUrl;
+                userImg.src = data.photoUrl;
+            } else {
+                // Draw a placeholder generic silhouette if no photo is uploaded
+                const centerX = 150;
+                const centerY = 280;
+                const radius = 90;
+
+                ctx.beginPath();
+                ctx.arc(centerX, centerY, radius, 0, Math.PI * 2, true);
+                ctx.fillStyle = '#EEEEEE';
+                ctx.fill();
+                ctx.lineWidth = 10;
+                ctx.strokeStyle = '#FFD700';
+                ctx.stroke();
+
+                ctx.fillStyle = '#CCCCCC';
+                ctx.font = 'bold 24px Tahoma';
+                ctx.fillText('بدون صورة', centerX, centerY + 10);
             }
+
         };
     }
 }

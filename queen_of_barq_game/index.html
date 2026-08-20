@@ -86,7 +86,7 @@
             width: 90%;
             max-width: 400px;
         }
-        #card-form-modal input[type="text"], #card-form-modal input[type="file"] {
+        #card-form-modal input[type="text"], #card-form-modal input[type="number"], #card-form-modal input[type="file"] {
             width: 90%;
             padding: 10px;
             margin: 10px 0;
@@ -164,9 +164,17 @@
             <div id="card-form-modal">
                 <h2>أنت الآن مواطن في كوكب برق البرق!</h2>
                 <p>النتيجة: <span id="final-score">0</span></p>
-                <input type="text" id="citizen-name" placeholder="أدخل اسمك الكريم..." maxlength="20">
-                <p>ارفع صورتك الشخصية للبطاقة:</p>
+
+                <input type="text" id="citizen-name" placeholder="الاسم الكريم..." maxlength="20">
+                <input type="number" id="citizen-age" placeholder="العمر..." min="18" max="99">
+                <select id="citizen-gender" style="width: 90%; padding: 10px; margin: 10px 0; border-radius: 10px; border: 2px solid #FFD700; font-size: 16px;">
+                    <option value="رجل">الجنس: رجل</option>
+                    <option value="امرأة">الجنس: امرأة</option>
+                </select>
+                <input type="text" id="citizen-city" placeholder="المدينة..." maxlength="20">
+                <p>ارفع صورتك الشخصية (سيتم تنسيقها تلقائياً):</p>
                 <input type="file" id="citizen-photo" accept="image/*">
+
                 <button id="btn-generate-card" class="btn-generate">إصدار البطاقة</button>
             </div>
         </div>

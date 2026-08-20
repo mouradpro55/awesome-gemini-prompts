@@ -3,6 +3,10 @@ import Phaser from 'phaser';
 export default class GameScene extends Phaser.Scene {
     constructor() {
         super('GameScene');
+    }
+
+    init(data) {
+        this.selectedCharacter = data.character || 'groom';
         this.score = 0;
         this.prestige = 100;
         this.gameSpeed = 5;
@@ -26,7 +30,7 @@ export default class GameScene extends Phaser.Scene {
         this.physics.add.existing(this.ground, true);
 
         // Player
-        this.player = this.physics.add.sprite(150, 450, 'player');
+        this.player = this.physics.add.sprite(150, 450, this.selectedCharacter === 'bride' ? 'player_bride' : 'player_groom');
         this.player.setCollideWorldBounds(true);
         this.player.setGravityY(1200);
         this.physics.add.collider(this.player, this.ground);
@@ -56,6 +60,11 @@ export default class GameScene extends Phaser.Scene {
 
         // Queen Events
         this.time.addEvent({ delay: 20000, callback: this.triggerQueenGaze, callbackScope: this, loop: true });
+
+        if (!this.bgm) {
+            this.bgm = this.sound.add('bgm', { loop: true, volume: 0.5 });
+        }
+        if (!this.bgm.isPlaying) this.bgm.play();
         this.time.addEvent({ delay: 35000, callback: this.triggerQueenDecree, callbackScope: this, loop: true });
 
         // Listen to UI events
@@ -219,6 +228,7 @@ export default class GameScene extends Phaser.Scene {
 
     gameOver() {
         this.physics.pause();
+        if (this.bgm) this.bgm.stop();
         this.isQueenEvent = true;
         this.player.setTint(0xff0000);
         window.GameEvents.off('answerSelected', this.handleAnswer, this);
