@@ -61,10 +61,18 @@ export default class GameScene extends Phaser.Scene {
         // Queen Events
         this.time.addEvent({ delay: 20000, callback: this.triggerQueenGaze, callbackScope: this, loop: true });
 
-        if (!this.bgm) {
-            this.bgm = this.sound.add('bgm', { loop: true, volume: 0.5 });
+        // Ensure audio context is active
+        if (this.sound.context.state === 'suspended') {
+            this.sound.context.resume();
         }
-        if (!this.bgm.isPlaying) this.bgm.play();
+
+        // Stop any existing instance just in case
+        if (this.bgm) {
+            this.bgm.stop();
+        }
+
+        this.bgm = this.sound.add('bgm', { loop: true, volume: 0.5 });
+        this.bgm.play();
         this.time.addEvent({ delay: 35000, callback: this.triggerQueenDecree, callbackScope: this, loop: true });
 
         // Listen to UI events

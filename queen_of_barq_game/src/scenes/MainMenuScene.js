@@ -66,6 +66,9 @@ export default class MainMenuScene extends Phaser.Scene {
     }
 
     startGame(character) {
+        if (this.sound.context.state === 'suspended') {
+            this.sound.context.resume();
+        }
         this.scene.start('GameScene', { character: character });
     }
 }
