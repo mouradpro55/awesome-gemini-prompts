@@ -40,11 +40,11 @@ export default class BootScene extends Phaser.Scene {
 
         // Load images
         this.load.image('bg_main', '/assets/images1.jpg'); // The palace/queen image
-        this.load.image('bg_game', '/assets/images2.jpg'); // Passports/traveling image
+        this.load.image('bg_game', '/assets/images777.jpg'); // Passports/traveling image
 
         // Card templates
         this.load.image('card_template_1', '/assets/images.jpg');
-        this.load.image('card_template_2', '/assets/images14.jpg');
+        this.load.image('card_template_2', '/assets/images4444.jpg');
 
         // Characters & Music
         this.load.image('player_groom', '/assets/groom.svg');

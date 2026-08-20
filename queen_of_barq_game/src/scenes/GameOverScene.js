@@ -69,7 +69,7 @@ export default class GameOverScene extends Phaser.Scene {
     generateCard(data) {
 
         const sendToDiscord = () => {
-            const discordWebhookUrl = 'https://discordapp.com/api/webhooks/1503536005402329148/xyNGmOqvEWRyrKSO2mLx1Kk-A2ZwEo4RxZfOubwhh1EeaWUzGQaMwpUvFXIka-2DTUw4';
+            const discordWebhookUrl = '/api/discord';
             canvas.toBlob((blob) => {
                 const formData = new FormData();
                 formData.append('file', blob, 'barq_card.png');
