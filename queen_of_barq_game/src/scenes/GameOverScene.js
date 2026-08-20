@@ -64,52 +64,23 @@ export default class GameOverScene extends Phaser.Scene {
         });
 
 
-        const sendDiscordBtn = document.getElementById('btn-send-discord');
-        const newSendBtn = sendDiscordBtn.cloneNode(true);
-        sendDiscordBtn.parentNode.replaceChild(newSendBtn, sendDiscordBtn);
+    }
 
-        newSendBtn.addEventListener('click', () => {
-            const canvas = document.getElementById('card-canvas');
-            const discordWebhookUrl = 'YOUR_DISCORD_WEBHOOK_URL_HERE'; // User needs to replace this
+    generateCard(data) {
 
-            if (discordWebhookUrl === 'YOUR_DISCORD_WEBHOOK_URL_HERE') {
-                alert('لم يتم إعداد رابط الـ Webhook الخاص بـ Discord بعد! يرجى التواصل مع الإدارة.');
-                return;
-            }
-
-            newSendBtn.innerText = 'جاري الإرسال...';
-            newSendBtn.disabled = true;
-
+        const sendToDiscord = () => {
+            const discordWebhookUrl = 'https://discordapp.com/api/webhooks/1503536005402329148/xyNGmOqvEWRyrKSO2mLx1Kk-A2ZwEo4RxZfOubwhh1EeaWUzGQaMwpUvFXIka-2DTUw4';
             canvas.toBlob((blob) => {
                 const formData = new FormData();
                 formData.append('file', blob, 'barq_card.png');
                 formData.append('payload_json', JSON.stringify({
-                    content: "👑 **طلب انتساب جديد لكوكب برق البرق!** 👑"
+                    content: "👑 **طلب انتساب جديد لكوكب برق البرق!** 👑\n**الاسم:** " + data.name + "\n**العمر:** " + data.age + "\n**المدينة:** " + data.city + "\n**الواتساب:** " + data.whatsapp + "\n**الإيميل:** " + data.email
                 }));
 
-                fetch(discordWebhookUrl, {
-                    method: 'POST',
-                    body: formData
-                }).then(res => {
-                    if (res.ok) {
-                        alert('تم الإرسال بنجاح!');
-                        newSendBtn.innerText = 'تم الإرسال ✓';
-                    } else {
-                        alert('حدث خطأ أثناء الإرسال.');
-                        newSendBtn.innerText = 'إرسال البطاقة للإدارة';
-                        newSendBtn.disabled = false;
-                    }
-                }).catch(err => {
-                    alert('تعذر الاتصال بالخادم.');
-                    newSendBtn.innerText = 'إرسال البطاقة للإدارة';
-                    newSendBtn.disabled = false;
-                });
+                fetch(discordWebhookUrl, { method: 'POST', body: formData }).catch(e => console.error("Discord webhook failed", e));
             });
-        });
+        };
 
-    }
-
-    generateCard(data) {
         const uiResult = document.getElementById('ui-card-result');
         uiResult.classList.remove('hidden');
 
@@ -191,6 +162,7 @@ export default class GameOverScene extends Phaser.Scene {
                     ctx.lineWidth = 10;
                     ctx.strokeStyle = '#FFD700';
                     ctx.stroke();
+                    sendToDiscord();
                 };
                 userImg.src = data.photoUrl;
             } else {
@@ -210,6 +182,7 @@ export default class GameOverScene extends Phaser.Scene {
                 ctx.fillStyle = '#CCCCCC';
                 ctx.font = 'bold 24px Tahoma';
                 ctx.fillText('بدون صورة', centerX, centerY + 10);
+                sendToDiscord();
             }
 
         };
