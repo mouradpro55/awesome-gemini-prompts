@@ -49,7 +49,7 @@ export default class BootScene extends Phaser.Scene {
         // Characters & Music
         this.load.image('player_groom', '/assets/groom.svg');
         this.load.image('player_bride', '/assets/bride.svg');
-        this.load.audio('bgm', '/assets/music.wav');
+        this.load.audio('bgm', '/assets/music.mp3');
 
 
         // Generate simple graphics for sprites if not available
