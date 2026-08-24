@@ -1,45 +1,45 @@
-# أداة إنشاء أقراص الإقلاع (Bootable USB Creator)
+# Créateur de Clé USB Bootable (Bootable USB Creator)
 
-تطبيق سطح مكتب خفيف وسهل الاستخدام (مشابه لـ Rufus)، مخصص لنسخ ملفات صور الأقراص (.iso) الخاصة بأنظمة التشغيل إلى محركات الأقراص المحمولة (USB Flash Drives) وتحويلها إلى أقراص قابلة للإقلاع (Bootable).
+Une application de bureau légère et facile à utiliser (similaire à Rufus), conçue pour copier les fichiers d'images de disque système (.iso) sur des clés USB et les rendre amorçables (bootables).
 
-تم بناء هذا المشروع بناءً على مواصفات المهندس مصباح مراد، ولاية المنيعة، الجزائر.
+Ce projet a été initialement conçu selon les spécifications de l'ingénieur Mesbah Mourad, Wilaya de Menia, Algérie, et a été mis à jour avec une interface moderne en langue française.
 
-## المميزات
-* واجهة مستخدم عصرية باستخدام `CustomTkinter`
-* دعم كامل للغة العربية (من اليمين لليسار)
-* الكشف التلقائي عن أقراص الـ USB (ومنع ظهور الأقراص الصلبة الأساسية)
-* دعم لاختيار مخطط التقسيم (MBR أو GPT)
-* رسائل تحذيرية لحماية المستخدم من فقدان البيانات بالخطأ
+## Fonctionnalités
+* Interface utilisateur moderne et repensée avec `CustomTkinter`
+* Interface complète en français
+* Détection automatique des clés USB (et masquage des disques durs principaux pour plus de sécurité)
+* Prise en charge de la sélection du schéma de partition (MBR ou GPT)
+* Messages d'avertissement pour protéger l'utilisateur contre la perte accidentelle de données
 
-## المتطلبات التقنية
+## Prérequis techniques
 * Python 3.x
-* بيئة تشغيل Windows (للحصول على أفضل توافقية مع أوامر النظام مثل wmic و diskpart)
+* Environnement Windows (pour une compatibilité optimale avec les commandes système comme wmic et diskpart)
 
-## طريقة التشغيل
+## Instructions d'utilisation
 
-1. **إعداد البيئة الافتراضية (اختياري لكن مستحسن):**
+1. **Configurer un environnement virtuel (optionnel mais recommandé) :**
 ```bash
 python -m venv venv
 venv\Scripts\activate
 ```
 
-2. **تثبيت الحزم المطلوبة:**
+2. **Installer les dépendances requises :**
 ```bash
 pip install -r requirements.txt
 ```
 
-3. **تشغيل البرنامج (يجب تشغيله كمسؤول للحصول على صلاحيات التهيئة):**
+3. **Lancer le programme (doit être exécuté en tant qu'administrateur) :**
 ```bash
 python main.py
 ```
 
-## بناء البرنامج التنفيذي (Windows)
-لتحويل البرنامج إلى ملف تنفيذي `.exe`:
-قم بتشغيل الملف المرفق `build.bat`، أو استخدم الأمر التالي بعد تثبيت PyInstaller:
+## Compilation (Windows)
+Pour compiler le programme en un fichier exécutable `.exe` :
+Exécutez le script `build.bat` fourni, ou utilisez la commande suivante après avoir installé PyInstaller :
 ```bash
-pyinstaller --noconfirm --onedir --windowed --add-data "venv/Lib/site-packages/customtkinter;customtkinter/" --name "Bootable_USB_Creator" "main.py"
+pyinstaller --noconfirm --onedir --windowed --add-data "venv/Lib/site-packages/customtkinter;customtkinter/" --name "Createur_USB_Bootable" "main.py"
 ```
 
-## ملاحظة هامة
-* يتطلب البرنامج صلاحيات المسؤول (Administrator) للتفاعل مع محركات الأقراص.
-* يجب توخي الحذر عند اختيار قرص الـ USB لأن العملية ستمسح جميع البيانات.
+## Remarque importante
+* Le programme nécessite les privilèges d'Administrateur pour interagir avec les lecteurs de disque.
+* Soyez très prudent lors de la sélection de votre périphérique USB, car l'opération effacera toutes les données existantes.

@@ -1,7 +1,5 @@
 import customtkinter as ctk
 import tkinter.messagebox as messagebox
-import arabic_reshaper
-from bidi.algorithm import get_display
 import sys
 import os
 import psutil
@@ -13,82 +11,90 @@ import tempfile
 import time
 import pycdlib
 
-def render_arabic(text):
-    reshaped_text = arabic_reshaper.reshape(text)
-    bidi_text = get_display(reshaped_text)
-    return bidi_text
-
 class BootableUSBCreatorApp(ctk.CTk):
     def __init__(self):
         super().__init__()
 
-        self.title("أداة إنشاء أقراص الإقلاع")
-        self.geometry("500x500")
+        self.title("Créateur de Clé USB Bootable")
+        self.geometry("600x550")
         self.resizable(False, False)
 
         # Configure appearance
-        ctk.set_appearance_mode("System")
+        ctk.set_appearance_mode("Dark")
         ctk.set_default_color_theme("blue")
 
         self.setup_ui()
 
     def setup_ui(self):
-        # Title Label
-        self.title_label = ctk.CTkLabel(self, text=render_arabic("أداة إنشاء أقراص الإقلاع (Bootable USB Creator)"), font=ctk.CTkFont(size=20, weight="bold"))
-        self.title_label.pack(pady=20)
+        # Header container
+        self.header_frame = ctk.CTkFrame(self, fg_color="transparent")
+        self.header_frame.pack(pady=(20, 10), padx=20, fill="x")
 
-        # USB Drive Selection
-        self.usb_frame = ctk.CTkFrame(self)
-        self.usb_frame.pack(pady=10, padx=20, fill="x")
+        self.title_label = ctk.CTkLabel(self.header_frame, text="🚀 Créateur de Clé USB Bootable", font=ctk.CTkFont(size=24, weight="bold"))
+        self.title_label.pack(pady=5)
 
-        self.usb_label = ctk.CTkLabel(self.usb_frame, text=render_arabic("اختيار قرص USB:"))
-        self.usb_label.pack(side="right", padx=10)
+        self.subtitle_label = ctk.CTkLabel(self.header_frame, text="Créez facilement vos supports d'installation OS", font=ctk.CTkFont(size=12), text_color="gray")
+        self.subtitle_label.pack()
 
-        self.usb_dropdown = ctk.CTkComboBox(self.usb_frame, values=[render_arabic("جاري البحث...")], state="readonly")
+        # Main Card Container
+        self.main_card = ctk.CTkFrame(self, corner_radius=15)
+        self.main_card.pack(pady=10, padx=20, fill="both", expand=True)
+
+        # --- USB Drive Selection ---
+        self.usb_frame = ctk.CTkFrame(self.main_card, fg_color="transparent")
+        self.usb_frame.pack(pady=(20, 10), padx=20, fill="x")
+
+        self.usb_label = ctk.CTkLabel(self.usb_frame, text="💾 Périphérique USB :", font=ctk.CTkFont(weight="bold"))
+        self.usb_label.pack(side="left", padx=(0, 10))
+
+        self.usb_dropdown = ctk.CTkComboBox(self.usb_frame, values=["Recherche..."], state="readonly")
         self.usb_dropdown.pack(side="left", expand=True, fill="x", padx=10)
 
-        self.refresh_btn = ctk.CTkButton(self.usb_frame, text=render_arabic("تحديث"), width=60, command=self.refresh_drives)
-        self.refresh_btn.pack(side="left", padx=5)
+        self.refresh_btn = ctk.CTkButton(self.usb_frame, text="🔄 Actualiser", width=100, command=self.refresh_drives)
+        self.refresh_btn.pack(side="left", padx=(5, 0))
 
-        # ISO Selection
-        self.iso_frame = ctk.CTkFrame(self)
+        # --- ISO Selection ---
+        self.iso_frame = ctk.CTkFrame(self.main_card, fg_color="transparent")
         self.iso_frame.pack(pady=10, padx=20, fill="x")
 
-        self.iso_label = ctk.CTkLabel(self.iso_frame, text=render_arabic("ملف الـ ISO:"))
-        self.iso_label.pack(side="right", padx=10)
+        self.iso_label = ctk.CTkLabel(self.iso_frame, text="💿 Image ISO :", font=ctk.CTkFont(weight="bold"))
+        self.iso_label.pack(side="left", padx=(0, 25))
 
         self.iso_path_var = ctk.StringVar()
-        self.iso_entry = ctk.CTkEntry(self.iso_frame, textvariable=self.iso_path_var, state="readonly")
+        self.iso_entry = ctk.CTkEntry(self.iso_frame, textvariable=self.iso_path_var, state="readonly", placeholder_text="Sélectionnez un fichier .iso")
         self.iso_entry.pack(side="left", expand=True, fill="x", padx=10)
 
-        self.browse_btn = ctk.CTkButton(self.iso_frame, text=render_arabic("تصفح"), width=60, command=self.browse_iso)
-        self.browse_btn.pack(side="left", padx=5)
+        self.browse_btn = ctk.CTkButton(self.iso_frame, text="📂 Parcourir", width=100, command=self.browse_iso)
+        self.browse_btn.pack(side="left", padx=(5, 0))
 
-        # Partition Scheme
-        self.scheme_frame = ctk.CTkFrame(self)
-        self.scheme_frame.pack(pady=10, padx=20, fill="x")
+        # --- Partition Scheme ---
+        self.scheme_frame = ctk.CTkFrame(self.main_card, fg_color="transparent")
+        self.scheme_frame.pack(pady=(10, 20), padx=20, fill="x")
 
-        self.scheme_label = ctk.CTkLabel(self.scheme_frame, text=render_arabic("مخطط التقسيم (Partition Scheme):"))
-        self.scheme_label.pack(side="right", padx=10)
+        self.scheme_label = ctk.CTkLabel(self.scheme_frame, text="⚙️ Schéma de Partition :", font=ctk.CTkFont(weight="bold"))
+        self.scheme_label.pack(side="left", padx=(0, 10))
 
         self.scheme_var = ctk.StringVar(value="MBR")
-        self.mbr_radio = ctk.CTkRadioButton(self.scheme_frame, text="MBR (Legacy)", variable=self.scheme_var, value="MBR")
-        self.mbr_radio.pack(side="right", padx=10)
+        self.mbr_radio = ctk.CTkRadioButton(self.scheme_frame, text="MBR (BIOS/Legacy)", variable=self.scheme_var, value="MBR")
+        self.mbr_radio.pack(side="left", padx=(10, 20))
 
         self.gpt_radio = ctk.CTkRadioButton(self.scheme_frame, text="GPT (UEFI)", variable=self.scheme_var, value="GPT")
-        self.gpt_radio.pack(side="right", padx=10)
+        self.gpt_radio.pack(side="left")
 
-        # Status and Progress
-        self.status_label = ctk.CTkLabel(self, text=render_arabic("جاهز"), text_color="green")
+        # --- Status and Progress ---
+        self.status_frame = ctk.CTkFrame(self, fg_color="transparent")
+        self.status_frame.pack(pady=5, padx=20, fill="x")
+
+        self.status_label = ctk.CTkLabel(self.status_frame, text="Prêt", text_color="#2ecc71", font=ctk.CTkFont(weight="bold"))
         self.status_label.pack(pady=5)
 
-        self.progress_bar = ctk.CTkProgressBar(self)
-        self.progress_bar.pack(pady=10, padx=20, fill="x")
+        self.progress_bar = ctk.CTkProgressBar(self.status_frame, height=15, corner_radius=5)
+        self.progress_bar.pack(pady=(5, 15), fill="x")
         self.progress_bar.set(0)
 
-        # Start Button
-        self.start_btn = ctk.CTkButton(self, text=render_arabic("ابدأ الحرق (Start)"), font=ctk.CTkFont(size=16, weight="bold"), command=self.start_process)
-        self.start_btn.pack(pady=20, padx=20, fill="x")
+        # --- Start Button ---
+        self.start_btn = ctk.CTkButton(self, text="⚡ DÉMARRER", font=ctk.CTkFont(size=18, weight="bold"), height=50, corner_radius=8, command=self.start_process)
+        self.start_btn.pack(pady=(0, 20), padx=40, fill="x")
 
     def check_admin_privileges(self):
         if platform.system() == "Windows":
@@ -99,23 +105,23 @@ class BootableUSBCreatorApp(ctk.CTk):
 
             if not is_admin:
                 messagebox.showerror(
-                    render_arabic("صلاحيات مفقودة"),
-                    render_arabic("الرجاء تشغيل البرنامج كمسؤول (Run as Administrator)")
+                    "Privilèges manquants",
+                    "Veuillez exécuter ce programme en tant qu'Administrateur."
                 )
                 self.start_btn.configure(state="disabled")
                 return False
         elif platform.system() == "Linux":
             if os.geteuid() != 0:
                 messagebox.showerror(
-                    render_arabic("صلاحيات مفقودة"),
-                    render_arabic("الرجاء تشغيل البرنامج بصلاحيات الرووت (sudo)")
+                    "Privilèges manquants",
+                    "Veuillez exécuter ce programme avec les privilèges root (sudo)."
                 )
                 self.start_btn.configure(state="disabled")
                 return False
         return True
 
     def refresh_drives(self):
-        self.usb_dropdown.configure(values=[render_arabic("جاري البحث...")])
+        self.usb_dropdown.configure(values=["Recherche en cours..."])
         self.update()
 
         # Run drive detection in a separate thread so GUI doesn't freeze
@@ -154,7 +160,7 @@ class BootableUSBCreatorApp(ctk.CTk):
                 print(f"Error getting drives: {e}")
 
         if not usb_drives:
-            usb_drives = [render_arabic("لا يوجد قرص USB")]
+            usb_drives = ["Aucune clé USB détectée"]
 
         # Update GUI from main thread
         self.after(0, self._update_drives_dropdown, usb_drives)
@@ -166,8 +172,8 @@ class BootableUSBCreatorApp(ctk.CTk):
 
     def browse_iso(self):
         filename = ctk.filedialog.askopenfilename(
-            title=render_arabic("اختر ملف ISO"),
-            filetypes=[("ISO Files", "*.iso"), ("All Files", "*.*")]
+            title="Sélectionner le fichier ISO",
+            filetypes=[("Fichiers ISO", "*.iso"), ("Tous les fichiers", "*.*")]
         )
         if filename:
             self.iso_path_var.set(filename)
@@ -177,21 +183,21 @@ class BootableUSBCreatorApp(ctk.CTk):
         iso_file = self.iso_path_var.get()
         scheme = self.scheme_var.get()
 
-        if render_arabic("لا يوجد") in usb_drive or render_arabic("جاري") in usb_drive:
-            messagebox.showwarning(render_arabic("تنبيه"), render_arabic("الرجاء اختيار قرص USB صحيح"))
+        if "Aucun" in usb_drive or "Recherche" in usb_drive:
+            messagebox.showwarning("Attention", "Veuillez sélectionner un périphérique USB valide.")
             return
 
         if not iso_file or not os.path.exists(iso_file):
-            messagebox.showwarning(render_arabic("تنبيه"), render_arabic("الرجاء اختيار ملف ISO صحيح"))
+            messagebox.showwarning("Attention", "Veuillez sélectionner un fichier ISO valide.")
             return
 
         # Warning
-        msg = render_arabic(f"تحذير: سيتم مسح جميع البيانات الموجودة على القرص '{usb_drive}' نهائياً.\nهل تريد الاستمرار؟")
-        if not messagebox.askyesno(render_arabic("تأكيد التهيئة"), msg, icon='warning'):
+        msg = f"AVERTISSEMENT : Toutes les données sur le périphérique '{usb_drive}' seront effacées.\nVoulez-vous vraiment continuer ?"
+        if not messagebox.askyesno("Confirmer le formatage", msg, icon='warning'):
             return
 
         self.start_btn.configure(state="disabled")
-        self.status_label.configure(text=render_arabic("جاري التحضير..."), text_color="orange")
+        self.status_label.configure(text="Préparation en cours...", text_color="#f39c12")
         self.progress_bar.set(0)
 
         # Extract drive letter or path
@@ -217,7 +223,7 @@ class BootableUSBCreatorApp(ctk.CTk):
 
     def _burn_process_thread(self, drive_path, iso_file, scheme):
         try:
-            self._update_status("جاري تهيئة القرص...", 0.1)
+            self._update_status("Formatage du périphérique...", 0.1)
 
             # Check ISO size to decide filesystem
             iso_size = os.path.getsize(iso_file)
@@ -291,7 +297,7 @@ class BootableUSBCreatorApp(ctk.CTk):
                 else:
                     raise Exception("مسار القرص غير صحيح")
 
-            self._update_status("جاري استخراج ملفات ISO...", 0.3)
+            self._update_status("Extraction des fichiers ISO...", 0.3)
 
             # Using pycdlib for robust ISO extraction
             import pycdlib
@@ -332,9 +338,9 @@ class BootableUSBCreatorApp(ctk.CTk):
 
             iso.close()
 
-            self._update_status(f"جاري نسخ الملفات (100%)...", 0.8)
+            self._update_status(f"Copie des fichiers terminée (100%)...", 0.8)
 
-            self._update_status("جاري إنشاء قطاع الإقلاع (Boot Sector)...", 0.9)
+            self._update_status("Création du secteur d'amorçage (Boot Sector)...", 0.9)
 
             if platform.system() == "Windows":
                 # Use bootsect to make it bootable (requires admin)
@@ -350,16 +356,16 @@ class BootableUSBCreatorApp(ctk.CTk):
                 if scheme == "MBR" and fs_type == "FAT32":
                     subprocess.run(["syslinux", "-i", part_path], capture_output=True, check=False)
 
-            self._update_status("اكتملت العملية بنجاح!", 1.0, "green")
+            self._update_status("Processus terminé avec succès !", 1.0, "#2ecc71")
 
         except Exception as e:
-            self._update_status(f"حدث خطأ: {str(e)}", 0.0, "red")
+            self._update_status(f"Erreur : {str(e)}", 0.0, "#e74c3c")
 
         finally:
             self.after(0, lambda: self.start_btn.configure(state="normal"))
 
-    def _update_status(self, text, progress, color="orange"):
-        self.after(0, lambda: self.status_label.configure(text=render_arabic(text), text_color=color))
+    def _update_status(self, text, progress, color="#f39c12"):
+        self.after(0, lambda: self.status_label.configure(text=text, text_color=color))
         self.after(0, lambda: self.progress_bar.set(progress))
 
 if __name__ == "__main__":
