@@ -1,0 +1,4 @@
+textual
+pyserial-asyncio
+rich
+scapy
