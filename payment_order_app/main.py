@@ -212,7 +212,7 @@ class MainWindow(QMainWindow):
             except Exception as e:
                 self.append_log(f"فشل تحديث اسم ورقة العمل في ملف الإعدادات: {e}")
 
-        self.worker = Worker(template_path, data_path, output_dir, config_path, sheet_name=sheet_name)
+        self.worker = Worker(template_path, data_path, output_dir, config_path)
         self.worker.progress.connect(self.update_progress)
         self.worker.log.connect(self.append_log)
         self.worker.finished.connect(self.on_generation_finished)
