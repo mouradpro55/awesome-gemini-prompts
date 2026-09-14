@@ -9,7 +9,6 @@ def create_default_template(template_path):
     ws.sheet_view.rightToLeft = True
 
     bold_font = Font(name="Arial", size=12, bold=True)
-    normal_font = Font(name="Arial", size=11)
     center_align = Alignment(horizontal="center", vertical="center", wrap_text=True)
 
     def set_cell(coord, value, font, merge=None):
@@ -19,12 +18,10 @@ def create_default_template(template_path):
         if merge:
             ws.merge_cells(merge)
 
-    # Header
     set_cell("A1", "الجمهورية الجزائرية الديمقراطية الشعبية", bold_font, "A1:J1")
     set_cell("A2", "وزارة البريد والمواصلات السلكية واللاسلكية", bold_font, "A2:J2")
     set_cell("A3", "كشف مصاريف التنقل", Font(name="Arial", size=16, bold=True), "A3:J3")
 
-    # Template labels (Static)
     set_cell("A5", "الاسم واللقب:", bold_font)
     set_cell("D5", "الرتبة / الوظيفة:", bold_font)
     set_cell("G5", "الرقم الاستدلالي:", bold_font)
@@ -49,7 +46,6 @@ def create_default_template(template_path):
 
     wb.save(template_path)
 
-
 def generate_excel_report(employee, mission, output_path):
     template_path = "Template.xlsx"
     if not os.path.exists(template_path):
@@ -58,7 +54,6 @@ def generate_excel_report(employee, mission, output_path):
     wb = openpyxl.load_workbook(template_path)
     ws = wb.active
 
-    # Apply data onto the template
     normal_font = Font(name="Arial", size=11)
 
     ws['B5'] = employee[1]
@@ -102,10 +97,10 @@ def generate_excel_report(employee, mission, output_path):
 
     ws['E15'] = mission[16]
     ws['E15'].font = normal_font
-    # Avoid merging cells dynamically if template already has it, or merge if needed
+
     try:
         ws.merge_cells("E15:I15")
     except ValueError:
-        pass # Already merged in customized template
+        pass
 
     wb.save(output_path)

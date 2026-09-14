@@ -1,4 +1,4 @@
-customtkinter
+PyQt6
 reportlab
 openpyxl
 pyinstaller

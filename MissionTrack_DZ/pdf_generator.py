@@ -73,7 +73,6 @@ def generate_pdf_report(employee, mission, output_path):
     start_y -= 50
     c.setFont(font_name, 12)
 
-    # Simple table drawing
     col_widths = [100, 100, 100, 100]
     total_w = sum(col_widths)
     start_x = width/2 - total_w/2
@@ -84,7 +83,6 @@ def generate_pdf_report(employee, mission, output_path):
     c.rect(start_x+col_widths[0]*2, start_y, col_widths[2], 25)
     c.rect(start_x+col_widths[0]*3, start_y, col_widths[3], 25)
 
-    # Note RTL table flow (right to left)
     c.drawCentredString(start_x + col_widths[0]*3.5, start_y + 8, render_arabic("عدد الوجبات"))
     c.drawCentredString(start_x + col_widths[0]*2.5, start_y + 8, render_arabic("المبلغ للوجبات"))
     c.drawCentredString(start_x + col_widths[0]*1.5, start_y + 8, render_arabic("عدد الليالي"))
