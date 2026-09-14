@@ -9,6 +9,25 @@ from calculator import calculate_allowances
 from tafqeet import tafqeet
 from pdf_generator import generate_pdf_report
 from excel_generator import generate_excel_report
+from PyQt6.QtCore import QLocale
+import ctypes
+
+def force_arabic_keyboard():
+    """Forces the Windows keyboard layout to Arabic (Algeria)."""
+    if sys.platform == "win32":
+        try:
+            # 0x0401 is Arabic (Saudi Arabia) - the most universally recognized Arabic layout code in Windows.
+            # 0x1401 is Arabic (Algeria). We load 1401 first, fallback to 0401.
+            hkl = ctypes.windll.user32.LoadKeyboardLayoutW("00001401", 1)
+            if not hkl:
+                hkl = ctypes.windll.user32.LoadKeyboardLayoutW("00000401", 1)
+            # WM_INPUTLANGCHANGEREQUEST = 0x0050
+            # Broadcast to the active window to change layout
+            hwnd = ctypes.windll.user32.GetForegroundWindow()
+            if hwnd:
+                ctypes.windll.user32.PostMessageW(hwnd, 0x0050, 0, hkl)
+        except Exception as e:
+            print(f"Could not set Arabic keyboard layout: {e}")
 
 class EmployeesTab(QWidget):
     def __init__(self):
@@ -434,7 +453,17 @@ class MainWindow(QMainWindow):
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
+
+    # Set standard locale to Arabic / Algeria to hint the OS
+    locale = QLocale(QLocale.Language.Arabic, QLocale.Country.Algeria)
+    QLocale.setDefault(locale)
+
     app.setLayoutDirection(Qt.LayoutDirection.RightToLeft)
+
     window = MainWindow()
     window.show()
+
+    # Attempt to switch to Arabic keyboard layout natively on Windows
+    force_arabic_keyboard()
+
     sys.exit(app.exec())
