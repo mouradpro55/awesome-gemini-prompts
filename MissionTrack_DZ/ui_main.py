@@ -1,33 +1,14 @@
 import sys
-from PyQt6.QtWidgets import (QApplication, QMainWindow, QWidget, QVBoxLayout, QHBoxLayout,
+from PyQt5.QtWidgets import (QApplication, QMainWindow, QWidget, QVBoxLayout, QHBoxLayout,
                              QTabWidget, QLabel, QLineEdit, QPushButton, QTableWidget,
                              QTableWidgetItem, QComboBox, QDateTimeEdit, QMessageBox, QFileDialog, QHeaderView, QGroupBox, QFormLayout, QFrame)
-from PyQt6.QtCore import Qt, QDateTime
-from PyQt6.QtGui import QFont
+from PyQt5.QtCore import Qt, QDateTime, QLocale
+from PyQt5.QtGui import QFont
 import database
 from calculator import calculate_allowances
 from tafqeet import tafqeet
 from pdf_generator import generate_pdf_report
 from excel_generator import generate_excel_report
-from PyQt6.QtCore import QLocale
-import ctypes
-
-def force_arabic_keyboard():
-    """Forces the Windows keyboard layout to Arabic (Algeria)."""
-    if sys.platform == "win32":
-        try:
-            # 0x0401 is Arabic (Saudi Arabia) - the most universally recognized Arabic layout code in Windows.
-            # 0x1401 is Arabic (Algeria). We load 1401 first, fallback to 0401.
-            hkl = ctypes.windll.user32.LoadKeyboardLayoutW("00001401", 1)
-            if not hkl:
-                hkl = ctypes.windll.user32.LoadKeyboardLayoutW("00000401", 1)
-            # WM_INPUTLANGCHANGEREQUEST = 0x0050
-            # Broadcast to the active window to change layout
-            hwnd = ctypes.windll.user32.GetForegroundWindow()
-            if hwnd:
-                ctypes.windll.user32.PostMessageW(hwnd, 0x0050, 0, hkl)
-        except Exception as e:
-            print(f"Could not set Arabic keyboard layout: {e}")
 
 class EmployeesTab(QWidget):
     def __init__(self):
@@ -38,7 +19,7 @@ class EmployeesTab(QWidget):
 
         # Form
         form_group = QGroupBox("إضافة موظف جديد")
-        form_group.setFont(QFont("Arial", 14, QFont.Weight.Bold))
+        form_group.setFont(QFont("Arial", 14, QFont.Bold))
         form_layout = QFormLayout()
 
         self.name_input = QLineEdit()
@@ -69,7 +50,7 @@ class EmployeesTab(QWidget):
         form_layout.addRow("رقم الحساب:", self.bank_acc_input)
 
         self.add_btn = QPushButton("حفظ الموظف")
-        self.add_btn.setFont(QFont("Arial", 12, QFont.Weight.Bold))
+        self.add_btn.setFont(QFont("Arial", 12, QFont.Bold))
         self.add_btn.setStyleSheet("background-color: #0078D7; color: white; padding: 8px;")
         self.add_btn.clicked.connect(self.add_employee)
         form_layout.addRow(self.add_btn)
@@ -81,9 +62,9 @@ class EmployeesTab(QWidget):
         self.table.setFont(main_font)
         self.table.setColumnCount(4)
         self.table.setHorizontalHeaderLabels(["الرقم", "الاسم واللقب", "الرتبة", "المقر"])
-        self.table.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeMode.Stretch)
-        self.table.setSelectionBehavior(QTableWidget.SelectionBehavior.SelectRows)
-        self.table.setSelectionMode(QTableWidget.SelectionMode.SingleSelection)
+        self.table.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
+        self.table.setSelectionBehavior(QTableWidget.SelectRows)
+        self.table.setSelectionMode(QTableWidget.SingleSelection)
 
         self.delete_btn = QPushButton("حذف الموظف المحدد")
         self.delete_btn.setFont(main_font)
@@ -126,8 +107,8 @@ class EmployeesTab(QWidget):
         emp_name = self.table.item(row, 1).text()
 
         reply = QMessageBox.question(self, "تأكيد", f"هل أنت متأكد من حذف الموظف: {emp_name} وكافة مهماته؟",
-                                     QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No)
-        if reply == QMessageBox.StandardButton.Yes:
+                                     QMessageBox.Yes | QMessageBox.No)
+        if reply == QMessageBox.Yes:
             database.delete_employee(emp_id)
             QMessageBox.information(self, "نجاح", "تم الحذف.")
             self.refresh_table()
@@ -164,13 +145,13 @@ class MissionsTab(QWidget):
         self.refresh_emp_combo()
         self.emp_combo.currentIndexChanged.connect(self.refresh_missions_table)
         emp_label = QLabel("اختر الموظف:")
-        emp_label.setFont(QFont("Arial", 12, QFont.Weight.Bold))
+        emp_label.setFont(QFont("Arial", 12, QFont.Bold))
         emp_layout.addWidget(emp_label)
         emp_layout.addWidget(self.emp_combo)
 
         # Form
         form_group = QGroupBox("حساب وإضافة مهمة جديدة")
-        form_group.setFont(QFont("Arial", 14, QFont.Weight.Bold))
+        form_group.setFont(QFont("Arial", 14, QFont.Bold))
         form_layout = QFormLayout()
 
         self.order_num = QLineEdit()
@@ -203,7 +184,7 @@ class MissionsTab(QWidget):
 
         # Calc Output
         self.calc_btn = QPushButton("احسب آلياً")
-        self.calc_btn.setFont(QFont("Arial", 12, QFont.Weight.Bold))
+        self.calc_btn.setFont(QFont("Arial", 12, QFont.Bold))
         self.calc_btn.setStyleSheet("background-color: #E6A23C; color: white; padding: 8px;")
         self.calc_btn.clicked.connect(self.calc_mission)
         form_layout.addRow(self.calc_btn)
@@ -232,7 +213,7 @@ class MissionsTab(QWidget):
         form_layout.addRow("شهر التقرير:", self.month)
 
         self.add_btn = QPushButton("حفظ الكشف")
-        self.add_btn.setFont(QFont("Arial", 12, QFont.Weight.Bold))
+        self.add_btn.setFont(QFont("Arial", 12, QFont.Bold))
         self.add_btn.setStyleSheet("background-color: #0078D7; color: white; padding: 8px;")
         self.add_btn.clicked.connect(self.add_mission)
         form_layout.addRow(self.add_btn)
@@ -245,9 +226,9 @@ class MissionsTab(QWidget):
         self.table.setColumnCount(5)
         self.table.setHorizontalHeaderLabels(["ID", "المنطقة", "الذهاب", "الإياب", "الإجمالي"])
         self.table.setColumnHidden(0, True)
-        self.table.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeMode.Stretch)
-        self.table.setSelectionBehavior(QTableWidget.SelectionBehavior.SelectRows)
-        self.table.setSelectionMode(QTableWidget.SelectionMode.SingleSelection)
+        self.table.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
+        self.table.setSelectionBehavior(QTableWidget.SelectRows)
+        self.table.setSelectionMode(QTableWidget.SingleSelection)
 
         self.delete_btn = QPushButton("حذف المهمة المحددة")
         self.delete_btn.setFont(main_font)
@@ -262,12 +243,12 @@ class MissionsTab(QWidget):
         # Export Actions
         export_layout = QHBoxLayout()
         self.export_pdf_btn = QPushButton("تصدير إلى PDF")
-        self.export_pdf_btn.setFont(QFont("Arial", 12, QFont.Weight.Bold))
+        self.export_pdf_btn.setFont(QFont("Arial", 12, QFont.Bold))
         self.export_pdf_btn.setStyleSheet("background-color: #C12A2A; color: white; padding: 10px;")
         self.export_pdf_btn.clicked.connect(self.export_pdf)
 
         self.export_excel_btn = QPushButton("تصدير إلى Excel")
-        self.export_excel_btn.setFont(QFont("Arial", 12, QFont.Weight.Bold))
+        self.export_excel_btn.setFont(QFont("Arial", 12, QFont.Bold))
         self.export_excel_btn.setStyleSheet("background-color: #207245; color: white; padding: 10px;")
         self.export_excel_btn.clicked.connect(self.export_excel)
 
@@ -362,8 +343,8 @@ class MissionsTab(QWidget):
         mission_id = int(self.table.item(row, 0).text())
 
         reply = QMessageBox.question(self, "تأكيد", "هل أنت متأكد من الحذف؟",
-                                     QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No)
-        if reply == QMessageBox.StandardButton.Yes:
+                                     QMessageBox.Yes | QMessageBox.No)
+        if reply == QMessageBox.Yes:
             database.delete_mission(mission_id)
             QMessageBox.information(self, "نجاح", "تم الحذف.")
             self.refresh_missions_table()
@@ -409,8 +390,8 @@ class MainWindow(QMainWindow):
         self.setWindowTitle("MissionTrack DZ - نافذتي للتنقل")
         self.setMinimumSize(950, 750)
 
-        # Native PyQt6 RTL Support
-        self.setLayoutDirection(Qt.LayoutDirection.RightToLeft)
+        # Native PyQt5 RTL Support
+        self.setLayoutDirection(Qt.RightToLeft)
 
         database.init_db()
 
@@ -419,14 +400,14 @@ class MainWindow(QMainWindow):
 
         # Header
         header_lbl = QLabel("MissionTrack DZ\nلإدارة وحساب كشوف مصاريف التنقل")
-        header_lbl.setFont(QFont("Arial", 20, QFont.Weight.Bold))
-        header_lbl.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        header_lbl.setFont(QFont("Arial", 20, QFont.Bold))
+        header_lbl.setAlignment(Qt.AlignCenter)
         header_lbl.setStyleSheet("color: #333; margin: 10px;")
         layout.addWidget(header_lbl)
 
         # Tabs
         self.tabs = QTabWidget()
-        self.tabs.setFont(QFont("Arial", 12, QFont.Weight.Bold))
+        self.tabs.setFont(QFont("Arial", 12, QFont.Bold))
 
         self.emp_tab = EmployeesTab()
         self.mis_tab = MissionsTab()
@@ -439,8 +420,8 @@ class MainWindow(QMainWindow):
 
         # Footer
         footer_lbl = QLabel("تم إعداد هذا البرنامج وتطويره من طرف: السيد مصباح مراد")
-        footer_lbl.setFont(QFont("Arial", 10, QFont.Weight.Bold))
-        footer_lbl.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        footer_lbl.setFont(QFont("Arial", 10, QFont.Bold))
+        footer_lbl.setAlignment(Qt.AlignCenter)
         footer_lbl.setStyleSheet("color: #777;")
         layout.addWidget(footer_lbl)
 
@@ -455,15 +436,12 @@ if __name__ == "__main__":
     app = QApplication(sys.argv)
 
     # Set standard locale to Arabic / Algeria to hint the OS
-    locale = QLocale(QLocale.Language.Arabic, QLocale.Country.Algeria)
+    locale = QLocale(QLocale.Arabic, QLocale.Algeria)
     QLocale.setDefault(locale)
 
-    app.setLayoutDirection(Qt.LayoutDirection.RightToLeft)
+    app.setLayoutDirection(Qt.RightToLeft)
 
     window = MainWindow()
     window.show()
 
-    # Attempt to switch to Arabic keyboard layout natively on Windows
-    force_arabic_keyboard()
-
-    sys.exit(app.exec())
+    sys.exit(app.exec_())
