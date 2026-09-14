@@ -55,7 +55,7 @@ class MissionTrackApp(ctk.CTk):
         self.btn_about.grid(row=4, column=0, padx=20, pady=15, sticky="ew")
 
         self.theme_menu = ctk.CTkOptionMenu(self.sidebar, values=[render_ar("فاتح"), render_ar("داكن")], font=self.main_font, command=self.change_theme)
-        self.theme_menu.grid(row=6, column=0, padx=20, pady=20, sticky="s", ew="ew")
+        self.theme_menu.grid(row=6, column=0, padx=20, pady=20, sticky="sew")
         self.theme_menu.set(render_ar("داكن") if ctk.get_appearance_mode() == "Dark" else render_ar("فاتح"))
 
         # --- Main Content Area ---
