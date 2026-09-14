@@ -21,36 +21,41 @@ class MissionTrackApp(ctk.CTk):
         super().__init__()
 
         self.title(render_ar("MissionTrack DZ - نافذتي للتنقل"))
-        self.geometry("900x650")
+        self.geometry("950x700")
 
         database.init_db()
+
+        # Define modern global fonts
+        self.main_font = ctk.CTkFont(family="Tahoma", size=16)
+        self.title_font = ctk.CTkFont(family="Tahoma", size=24, weight="bold")
+        self.header_font = ctk.CTkFont(family="Tahoma", size=18, weight="bold")
 
         # Grid Layout
         self.grid_rowconfigure(0, weight=1)
         self.grid_columnconfigure(1, weight=1)
 
         # --- Sidebar ---
-        self.sidebar = ctk.CTkFrame(self, width=200, corner_radius=0)
+        self.sidebar = ctk.CTkFrame(self, width=220, corner_radius=0)
         self.sidebar.grid(row=0, column=2, sticky="nsew") # Right side for RTL
         self.sidebar.grid_rowconfigure(5, weight=1)
 
-        self.logo_label = ctk.CTkLabel(self.sidebar, text=render_ar("MissionTrack DZ"), font=ctk.CTkFont(size=20, weight="bold"))
+        self.logo_label = ctk.CTkLabel(self.sidebar, text=render_ar("MissionTrack DZ"), font=self.title_font)
         self.logo_label.grid(row=0, column=0, padx=20, pady=(20, 10))
 
-        self.btn_dash = ctk.CTkButton(self.sidebar, text=render_ar("لوحة القيادة"), command=lambda: self.show_frame("dash"))
-        self.btn_dash.grid(row=1, column=0, padx=20, pady=10)
+        self.btn_dash = ctk.CTkButton(self.sidebar, text=render_ar("لوحة القيادة"), font=self.main_font, command=lambda: self.show_frame("dash"))
+        self.btn_dash.grid(row=1, column=0, padx=20, pady=15, sticky="ew")
 
-        self.btn_emp = ctk.CTkButton(self.sidebar, text=render_ar("إدارة الموظفين"), command=lambda: self.show_frame("emp"))
-        self.btn_emp.grid(row=2, column=0, padx=20, pady=10)
+        self.btn_emp = ctk.CTkButton(self.sidebar, text=render_ar("إدارة الموظفين"), font=self.main_font, command=lambda: self.show_frame("emp"))
+        self.btn_emp.grid(row=2, column=0, padx=20, pady=15, sticky="ew")
 
-        self.btn_mis = ctk.CTkButton(self.sidebar, text=render_ar("إدارة الكشوفات"), command=lambda: self.show_frame("mis"))
-        self.btn_mis.grid(row=3, column=0, padx=20, pady=10)
+        self.btn_mis = ctk.CTkButton(self.sidebar, text=render_ar("إدارة الكشوفات"), font=self.main_font, command=lambda: self.show_frame("mis"))
+        self.btn_mis.grid(row=3, column=0, padx=20, pady=15, sticky="ew")
 
-        self.btn_about = ctk.CTkButton(self.sidebar, text=render_ar("حول البرنامج"), command=lambda: self.show_frame("about"))
-        self.btn_about.grid(row=4, column=0, padx=20, pady=10)
+        self.btn_about = ctk.CTkButton(self.sidebar, text=render_ar("حول البرنامج"), font=self.main_font, command=lambda: self.show_frame("about"))
+        self.btn_about.grid(row=4, column=0, padx=20, pady=15, sticky="ew")
 
-        self.theme_menu = ctk.CTkOptionMenu(self.sidebar, values=[render_ar("فاتح"), render_ar("داكن")], command=self.change_theme)
-        self.theme_menu.grid(row=6, column=0, padx=20, pady=20, sticky="s")
+        self.theme_menu = ctk.CTkOptionMenu(self.sidebar, values=[render_ar("فاتح"), render_ar("داكن")], font=self.main_font, command=self.change_theme)
+        self.theme_menu.grid(row=6, column=0, padx=20, pady=20, sticky="s", ew="ew")
         self.theme_menu.set(render_ar("داكن") if ctk.get_appearance_mode() == "Dark" else render_ar("فاتح"))
 
         # --- Main Content Area ---
@@ -60,10 +65,10 @@ class MissionTrackApp(ctk.CTk):
         self.frames["dash"] = ctk.CTkFrame(self, corner_radius=0, fg_color="transparent")
         self.frames["dash"].grid_columnconfigure(0, weight=1)
 
-        self.dash_title = ctk.CTkLabel(self.frames["dash"], text=render_ar("مرحباً بك في نظام تسيير المهمات"), font=ctk.CTkFont(size=24, weight="bold"))
+        self.dash_title = ctk.CTkLabel(self.frames["dash"], text=render_ar("مرحباً بك في نظام تسيير المهمات"), font=self.title_font)
         self.dash_title.grid(row=0, column=0, pady=30)
 
-        self.stats_label = ctk.CTkLabel(self.frames["dash"], text="", font=ctk.CTkFont(size=18))
+        self.stats_label = ctk.CTkLabel(self.frames["dash"], text="", font=self.header_font)
         self.stats_label.grid(row=1, column=0, pady=20)
 
         # 2. Employees
@@ -84,7 +89,7 @@ class MissionTrackApp(ctk.CTk):
             "مخصص لقطاع المواصلات السلكية واللاسلكية\n"
             "لأتمتة عملية إعداد ومراجعة وحساب كشوف مصاريف التنقل"
         )
-        self.about_lbl = ctk.CTkLabel(self.frames["about"], text=render_ar(about_text), font=ctk.CTkFont(size=16), justify="center")
+        self.about_lbl = ctk.CTkLabel(self.frames["about"], text=render_ar(about_text), font=self.main_font, justify="center")
         self.about_lbl.grid(row=0, column=0, pady=100)
 
         self.show_frame("dash")
@@ -112,33 +117,33 @@ class MissionTrackApp(ctk.CTk):
         f = self.frames["emp"]
         f.grid_columnconfigure((0, 1), weight=1)
 
-        ctk.CTkLabel(f, text=render_ar("إضافة موظف جديد")).grid(row=0, column=0, columnspan=2, pady=10)
+        ctk.CTkLabel(f, text=render_ar("إضافة موظف جديد"), font=self.header_font).grid(row=0, column=0, columnspan=2, pady=20)
 
-        self.e_name = ctk.CTkEntry(f, placeholder_text=render_ar("الاسم واللقب"))
-        self.e_name.grid(row=1, column=1, padx=10, pady=5, sticky="ew")
+        self.e_name = ctk.CTkEntry(f, placeholder_text=render_ar("الاسم واللقب"), font=self.main_font, justify="right")
+        self.e_name.grid(row=1, column=1, padx=10, pady=10, sticky="ew")
 
-        self.e_rank = ctk.CTkEntry(f, placeholder_text=render_ar("الرتبة"))
-        self.e_rank.grid(row=1, column=0, padx=10, pady=5, sticky="ew")
+        self.e_rank = ctk.CTkEntry(f, placeholder_text=render_ar("الرتبة"), font=self.main_font, justify="right")
+        self.e_rank.grid(row=1, column=0, padx=10, pady=10, sticky="ew")
 
-        self.e_job = ctk.CTkEntry(f, placeholder_text=render_ar("الوظيفة"))
-        self.e_job.grid(row=2, column=1, padx=10, pady=5, sticky="ew")
+        self.e_job = ctk.CTkEntry(f, placeholder_text=render_ar("الوظيفة"), font=self.main_font, justify="right")
+        self.e_job.grid(row=2, column=1, padx=10, pady=10, sticky="ew")
 
-        self.e_idx = ctk.CTkEntry(f, placeholder_text=render_ar("الرقم الاستدلالي"))
-        self.e_idx.grid(row=2, column=0, padx=10, pady=5, sticky="ew")
+        self.e_idx = ctk.CTkEntry(f, placeholder_text=render_ar("الرقم الاستدلالي"), font=self.main_font, justify="right")
+        self.e_idx.grid(row=2, column=0, padx=10, pady=10, sticky="ew")
 
-        self.e_cat = ctk.CTkEntry(f, placeholder_text=render_ar("الصنف"))
-        self.e_cat.grid(row=3, column=1, padx=10, pady=5, sticky="ew")
+        self.e_cat = ctk.CTkEntry(f, placeholder_text=render_ar("الصنف"), font=self.main_font, justify="right")
+        self.e_cat.grid(row=3, column=1, padx=10, pady=10, sticky="ew")
 
-        self.e_work = ctk.CTkEntry(f, placeholder_text=render_ar("المقر الإداري"))
-        self.e_work.grid(row=3, column=0, padx=10, pady=5, sticky="ew")
+        self.e_work = ctk.CTkEntry(f, placeholder_text=render_ar("المقر الإداري"), font=self.main_font, justify="right")
+        self.e_work.grid(row=3, column=0, padx=10, pady=10, sticky="ew")
 
-        self.e_btype = ctk.CTkOptionMenu(f, values=["CCP", "BNA", "BEA"])
-        self.e_btype.grid(row=4, column=1, padx=10, pady=5, sticky="ew")
+        self.e_btype = ctk.CTkOptionMenu(f, values=["CCP", "BNA", "BEA"], font=self.main_font)
+        self.e_btype.grid(row=4, column=1, padx=10, pady=10, sticky="ew")
 
-        self.e_bacc = ctk.CTkEntry(f, placeholder_text=render_ar("رقم الحساب"))
-        self.e_bacc.grid(row=4, column=0, padx=10, pady=5, sticky="ew")
+        self.e_bacc = ctk.CTkEntry(f, placeholder_text=render_ar("رقم الحساب"), font=self.main_font, justify="right")
+        self.e_bacc.grid(row=4, column=0, padx=10, pady=10, sticky="ew")
 
-        ctk.CTkButton(f, text=render_ar("حفظ الموظف"), command=self.save_emp).grid(row=5, column=0, columnspan=2, pady=15)
+        ctk.CTkButton(f, text=render_ar("حفظ الموظف"), font=self.main_font, command=self.save_emp).grid(row=5, column=0, columnspan=2, pady=20)
 
     def save_emp(self):
         data = {
@@ -162,56 +167,56 @@ class MissionTrackApp(ctk.CTk):
         f = self.frames["mis"]
         f.grid_columnconfigure((0, 1), weight=1)
 
-        self.m_emp_combo = ctk.CTkOptionMenu(f, values=[])
+        self.m_emp_combo = ctk.CTkOptionMenu(f, values=[], font=self.main_font)
         self.m_emp_combo.grid(row=0, column=1, padx=10, pady=10, sticky="ew")
-        ctk.CTkLabel(f, text=render_ar("اختر الموظف:")).grid(row=0, column=0, sticky="e", padx=10)
+        ctk.CTkLabel(f, text=render_ar("اختر الموظف:"), font=self.main_font).grid(row=0, column=0, sticky="e", padx=10)
 
         # Inputs
-        self.m_order = ctk.CTkEntry(f, placeholder_text=render_ar("رقم الأمر بمهمة"))
+        self.m_order = ctk.CTkEntry(f, placeholder_text=render_ar("رقم الأمر بمهمة"), font=self.main_font, justify="right")
         self.m_order.grid(row=1, column=1, padx=10, pady=5, sticky="ew")
-        self.m_date = ctk.CTkEntry(f, placeholder_text=render_ar("تاريخ الأمر"))
+        self.m_date = ctk.CTkEntry(f, placeholder_text=render_ar("تاريخ الأمر"), font=self.main_font, justify="right")
         self.m_date.grid(row=1, column=0, padx=10, pady=5, sticky="ew")
 
-        self.m_purp = ctk.CTkEntry(f, placeholder_text=render_ar("سبب التنقل"))
+        self.m_purp = ctk.CTkEntry(f, placeholder_text=render_ar("سبب التنقل"), font=self.main_font, justify="right")
         self.m_purp.grid(row=2, column=1, padx=10, pady=5, sticky="ew")
-        self.m_itin = ctk.CTkEntry(f, placeholder_text=render_ar("المسار (من - إلى)"))
+        self.m_itin = ctk.CTkEntry(f, placeholder_text=render_ar("المسار (من - إلى)"), font=self.main_font, justify="right")
         self.m_itin.grid(row=2, column=0, padx=10, pady=5, sticky="ew")
 
-        self.m_dep = ctk.CTkEntry(f, placeholder_text=render_ar("الذهاب (DD-MM-YYYY HH:MM)"))
+        self.m_dep = ctk.CTkEntry(f, placeholder_text=render_ar("الذهاب (DD-MM-YYYY HH:MM)"), font=self.main_font, justify="right")
         self.m_dep.grid(row=3, column=1, padx=10, pady=5, sticky="ew")
-        self.m_ret = ctk.CTkEntry(f, placeholder_text=render_ar("الإياب (DD-MM-YYYY HH:MM)"))
+        self.m_ret = ctk.CTkEntry(f, placeholder_text=render_ar("الإياب (DD-MM-YYYY HH:MM)"), font=self.main_font, justify="right")
         self.m_ret.grid(row=3, column=0, padx=10, pady=5, sticky="ew")
 
-        self.m_trans = ctk.CTkEntry(f, placeholder_text=render_ar("وسيلة النقل (مثال: سيارة إدارية)"))
+        self.m_trans = ctk.CTkEntry(f, placeholder_text=render_ar("وسيلة النقل (مثال: سيارة إدارية)"), font=self.main_font, justify="right")
         self.m_trans.grid(row=4, column=1, padx=10, pady=5, sticky="ew")
-        self.m_reg = ctk.CTkOptionMenu(f, values=[render_ar("شمال"), render_ar("جنوب")])
+        self.m_reg = ctk.CTkOptionMenu(f, values=[render_ar("شمال"), render_ar("جنوب")], font=self.main_font)
         self.m_reg.grid(row=4, column=0, padx=10, pady=5, sticky="ew")
 
         # Additional Budget Info
-        self.m_chap = ctk.CTkEntry(f, placeholder_text=render_ar("الباب المالي"))
+        self.m_chap = ctk.CTkEntry(f, placeholder_text=render_ar("الباب المالي"), font=self.main_font, justify="right")
         self.m_chap.grid(row=5, column=1, padx=10, pady=5, sticky="ew")
-        self.m_art = ctk.CTkEntry(f, placeholder_text=render_ar("المادة"))
+        self.m_art = ctk.CTkEntry(f, placeholder_text=render_ar("المادة"), font=self.main_font, justify="right")
         self.m_art.grid(row=5, column=0, padx=10, pady=5, sticky="ew")
 
-        self.m_month = ctk.CTkEntry(f, placeholder_text=render_ar("شهر وسنة الكشف (مثال: ماي 2026)"))
+        self.m_month = ctk.CTkEntry(f, placeholder_text=render_ar("شهر وسنة الكشف (مثال: ماي 2026)"), font=self.main_font, justify="right")
         self.m_month.grid(row=6, column=1, padx=10, pady=5, sticky="ew")
 
         # Calc Button
-        ctk.CTkButton(f, text=render_ar("حساب آلي"), command=self.calc_mission).grid(row=7, column=1, pady=10)
+        ctk.CTkButton(f, text=render_ar("حساب آلي"), font=self.main_font, command=self.calc_mission).grid(row=7, column=1, pady=10)
 
         # Results
-        self.m_meals = ctk.CTkEntry(f, placeholder_text=render_ar("الوجبات"))
+        self.m_meals = ctk.CTkEntry(f, placeholder_text=render_ar("الوجبات"), font=self.main_font, justify="right")
         self.m_meals.grid(row=8, column=1, padx=10, pady=5)
-        self.m_nights = ctk.CTkEntry(f, placeholder_text=render_ar("الليالي"))
+        self.m_nights = ctk.CTkEntry(f, placeholder_text=render_ar("الليالي"), font=self.main_font, justify="right")
         self.m_nights.grid(row=8, column=0, padx=10, pady=5)
 
-        ctk.CTkButton(f, text=render_ar("حفظ الكشف"), command=self.save_mission).grid(row=9, column=0, columnspan=2, pady=10)
+        ctk.CTkButton(f, text=render_ar("حفظ الكشف"), font=self.main_font, command=self.save_mission).grid(row=9, column=0, columnspan=2, pady=10)
 
         # Export Section
-        self.export_combo = ctk.CTkOptionMenu(f, values=[])
+        self.export_combo = ctk.CTkOptionMenu(f, values=[], font=self.main_font)
         self.export_combo.grid(row=10, column=1, padx=10, pady=20, sticky="ew")
-        ctk.CTkButton(f, text=render_ar("تصدير PDF"), command=self.export_pdf).grid(row=10, column=0, padx=10, pady=20, sticky="w")
-        ctk.CTkButton(f, text=render_ar("تصدير Excel"), command=self.export_excel).grid(row=10, column=0, padx=10, pady=20, sticky="e")
+        ctk.CTkButton(f, text=render_ar("تصدير PDF"), font=self.main_font, command=self.export_pdf).grid(row=10, column=0, padx=10, pady=20, sticky="w")
+        ctk.CTkButton(f, text=render_ar("تصدير Excel"), font=self.main_font, command=self.export_excel).grid(row=10, column=0, padx=10, pady=20, sticky="e")
 
     def refresh_emp_dropdown(self):
         emps = database.get_all_employees()
