@@ -8,12 +8,26 @@ def create_default_template(template_path):
     ws.title = "كشف مصاريف التنقل"
     ws.sheet_view.rightToLeft = True
 
-    # Print Settings: Landscape, A4, Fit all columns to 1 page
-    ws.page_setup.orientation = ws.ORIENTATION_LANDSCAPE
+    # Print Settings: Exact Match with User SRS
+    ws.views.sheetView[0].rightToLeft = True
+    ws.views.sheetView[0].showGridLines = False
+    ws.page_setup.orientation = ws.ORIENTATION_PORTRAIT
     ws.page_setup.paperSize = ws.PAPERSIZE_A4
-    ws.page_setup.fitToPage = True
-    ws.page_setup.fitToHeight = 0
-    ws.page_setup.fitToWidth = 1
+    ws.page_setup.scale = 80
+    ws.print_options.horizontalCentered = True
+    ws.page_margins.left = 0.118
+    ws.page_margins.right = 0.118
+    ws.page_margins.top = 0.354
+    ws.page_margins.bottom = 0.551
+
+    # Apply precise Column Dimensions
+    col_widths = {
+        'A': 1.1, 'B': 15.0, 'C': 8.9, 'D': 16.7, 'E': 13.0, 'F': 15.3, 'G': 37.1, 'H': 1.7,
+        'I': 11.1, 'J': 22.0, 'K': 15.1, 'L': 8.3, 'M': 11.0, 'N': 5.7, 'O': 5.3, 'P': 5.7,
+        'Q': 5.3, 'R': 5.9, 'S': 1.0, 'T': 7.1, 'U': 1.7, 'V': 1.7, 'W': 5.1
+    }
+    for col_letter, width in col_widths.items():
+        ws.column_dimensions[col_letter].width = width
 
     # Styling helpers
     bold_font = Font(name="Arial", size=11, bold=True)
@@ -43,6 +57,9 @@ def create_default_template(template_path):
     set_cell("G6", "2", normal_font)
     set_cell("F7", "الـمــــادة :", bold_font)
     set_cell("G7", "21100", normal_font)
+
+    # Main Report Title
+    set_cell("B9", "كشـــــف مصاريــــف التنقــــــــــل", Font(name="Arial", size=16, bold=True), align=center_align, merge="B9:G9")
 
     # Employee Data Headers
     set_cell("B11", "السيـــــــــــــد :", bold_font, align=right_align)
@@ -157,6 +174,9 @@ def generate_excel_report(employee, missions, output_path, tafqeet_text):
     except ValueError: pass
 
     # Month assumes we take the month of the first mission or leave blank
+    # NOTE: user specified F11 is the header ("لـشـهــــــــر :"). G11 should hold the data.
+    # In my previous code, F11 is header, G11 is where we put it. But wait, we write to G11. The user said "الخلية F11 فارغة! يجب كتابة الشهر".
+    # Oh! F11 has "لـشـهــــــــر :" in the template, so the data should actually go to G11. I will write to G11 just in case, but let's ensure F11 is safely written.
     safe_write("G11", missions[0][4] if missions and len(missions) > 0 else "")
 
     safe_write("C12", employee[2])

@@ -106,7 +106,7 @@ def export_report(type, emp_id):
         return "لا توجد بيانات أو مهمات لهذا الموظف لتصديرها", 404
 
     # Recalculate Grand Total for Tafqeet
-    grand_total = sum(m[14] for m in missions_list)
+    grand_total = sum(m[15] for m in missions_list)
     tafqeet_text = tafqeet(grand_total)
 
     if type == "pdf":
