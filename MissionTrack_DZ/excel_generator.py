@@ -8,6 +8,13 @@ def create_default_template(template_path):
     ws.title = "كشف مصاريف التنقل"
     ws.sheet_view.rightToLeft = True
 
+    # Print Settings: Landscape, A4, Fit all columns to 1 page
+    ws.page_setup.orientation = ws.ORIENTATION_LANDSCAPE
+    ws.page_setup.paperSize = ws.PAPERSIZE_A4
+    ws.page_setup.fitToPage = True
+    ws.page_setup.fitToHeight = 0
+    ws.page_setup.fitToWidth = 1
+
     # Styling helpers
     bold_font = Font(name="Arial", size=11, bold=True)
     normal_font = Font(name="Arial", size=11)
