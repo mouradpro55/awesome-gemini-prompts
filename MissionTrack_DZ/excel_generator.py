@@ -132,39 +132,57 @@ def generate_excel_report(employee, missions, output_path, tafqeet_text):
     center_align = Alignment(horizontal="center", vertical="center", wrap_text=True)
     normal_font = Font(name="Arial", size=11)
 
+    def safe_write(coord_str, val):
+        coord = openpyxl.utils.coordinate_to_tuple(coord_str)
+        for merged_range in ws.merged_cells.ranges:
+            if coord[0] >= merged_range.min_row and coord[0] <= merged_range.max_row and \
+               coord[1] >= merged_range.min_col and coord[1] <= merged_range.max_col:
+                top_left = ws.cell(row=merged_range.min_row, column=merged_range.min_col)
+                top_left.value = val
+                return top_left
+        cell = ws[coord_str]
+        cell.value = val
+        return cell
+
     # 1. Fill Employee Info
-    ws['C11'] = employee[1]
-    ws.merge_cells("C11:E11")
+    safe_write("C11", employee[1])
+    try: ws.merge_cells("C11:E11")
+    except ValueError: pass
 
     # Month assumes we take the month of the first mission or leave blank
-    ws['G11'] = missions[0][4] if missions and len(missions) > 0 else ""
+    safe_write("G11", missions[0][4] if missions and len(missions) > 0 else "")
 
-    ws['C12'] = employee[2]
-    ws.merge_cells("C12:E13")
+    safe_write("C12", employee[2])
+    try: ws.merge_cells("C12:E13")
+    except ValueError: pass
 
-    ws['G12'] = f"=C12"
-    ws.merge_cells("G12:G13")
+    safe_write("G12", f"=C12")
+    try: ws.merge_cells("G12:G13")
+    except ValueError: pass
 
-    ws['C14'] = employee[4]
-    ws.merge_cells("C14:E14")
+    safe_write("C14", employee[4])
+    try: ws.merge_cells("C14:E14")
+    except ValueError: pass
 
-    ws['G14'] = employee[5]
+    safe_write("G14", employee[5])
 
-    ws['C15'] = employee[6]
-    ws.merge_cells("C15:E15")
+    safe_write("C15", employee[6])
+    try: ws.merge_cells("C15:E15")
+    except ValueError: pass
 
-    ws['G16'] = employee[8]
+    safe_write("G16", employee[8])
 
     # 2. Link Sub-totals
-    ws['D19'] = "=N29"
-    ws['D20'] = "=O29"
-    ws['D22'] = "=P29"
-    ws['D23'] = "=Q29"
+    safe_write("D19", "=N29")
+    safe_write("D20", "=O29")
+    safe_write("D22", "=P29")
+    safe_write("D23", "=Q29")
 
     # 3. Tafqeet Text
-    ws['B29'] = f"أوقِف هذا الكشف عند مبلغ قدره: {tafqeet_text}"
-    ws['B29'].font = Font(name="Arial", size=12, bold=True)
-    ws.merge_cells("B29:G29")
+    t_cell = safe_write("B29", f"أوقِف هذا الكشف عند مبلغ قدره: {tafqeet_text}")
+    t_cell.font = Font(name="Arial", size=12, bold=True)
+    try: ws.merge_cells("B29:G29")
+    except ValueError: pass
 
     # 4. Fill Missions (Row 9 to 28, max 10 missions since 2 rows per mission)
     start_row = 9
@@ -194,32 +212,32 @@ def generate_excel_report(employee, missions, output_path, tafqeet_text):
             dep_date, dep_time, ret_date, ret_time = "", "", "", ""
 
         # Departure Row (row_dep)
-        ws[f"I{row_dep}"] = m[7] # Purpose
+        safe_write(f"I{row_dep}", m[7]) # Purpose
 
-        ws[f"J{row_dep}"] = m[8] # Itinerary
+        safe_write(f"J{row_dep}", m[8]) # Itinerary
         try: ws.merge_cells(f"J{row_dep}:J{row_ret}")
         except: pass
 
-        ws[f"K{row_dep}"] = dep_date
-        ws[f"L{row_dep}"] = dep_time
+        safe_write(f"K{row_dep}", dep_date)
+        safe_write(f"L{row_dep}", dep_time)
 
-        ws[f"M{row_dep}"] = m[9] # Transport
+        safe_write(f"M{row_dep}", m[9]) # Transport
         try: ws.merge_cells(f"M{row_dep}:M{row_ret}")
         except: pass
 
-        ws[f"N{row_dep}"] = n_meals if n_meals > 0 else ""
-        ws[f"O{row_dep}"] = n_nights if n_nights > 0 else ""
-        ws[f"P{row_dep}"] = s_meals if s_meals > 0 else ""
-        ws[f"Q{row_dep}"] = s_nights if s_nights > 0 else ""
+        safe_write(f"N{row_dep}", n_meals if n_meals > 0 else "")
+        safe_write(f"O{row_dep}", n_nights if n_nights > 0 else "")
+        safe_write(f"P{row_dep}", s_meals if s_meals > 0 else "")
+        safe_write(f"Q{row_dep}", s_nights if s_nights > 0 else "")
 
-        ws[f"R{row_dep}"] = m[5] # Order Num
-        ws[f"S{row_dep}"] = f'=IF(K{row_dep}="","","/")'
-        ws[f"T{row_dep}"] = f'=IF(K{row_dep}="","",YEAR(DATEVALUE(K{row_dep})))'
+        safe_write(f"R{row_dep}", m[5]) # Order Num
+        safe_write(f"S{row_dep}", f'=IF(K{row_dep}="","","/")')
+        safe_write(f"T{row_dep}", f'=IF(K{row_dep}="","",YEAR(DATEVALUE(K{row_dep})))')
 
         # Return Row (row_ret)
-        ws[f"K{row_ret}"] = ret_date
-        ws[f"L{row_ret}"] = ret_time
-        ws[f"R{row_ret}"] = m[6] # Order Date
+        safe_write(f"K{row_ret}", ret_date)
+        safe_write(f"L{row_ret}", ret_time)
+        safe_write(f"R{row_ret}", m[6]) # Order Date
 
         # Center align everything in the mission grid
         for c in range(9, 21):
