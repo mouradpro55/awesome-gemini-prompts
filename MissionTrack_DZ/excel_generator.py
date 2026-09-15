@@ -8,45 +8,120 @@ def create_default_template(template_path):
     ws.title = "كشف مصاريف التنقل"
     ws.sheet_view.rightToLeft = True
 
-    bold_font = Font(name="Arial", size=12, bold=True)
+    # Styling helpers
+    bold_font = Font(name="Arial", size=11, bold=True)
+    normal_font = Font(name="Arial", size=11)
     center_align = Alignment(horizontal="center", vertical="center", wrap_text=True)
+    right_align = Alignment(horizontal="right", vertical="center")
 
-    def set_cell(coord, value, font, merge=None):
+    thin_border = Border(left=Side(style='thin'), right=Side(style='thin'),
+                         top=Side(style='thin'), bottom=Side(style='thin'))
+
+    def set_cell(coord, value, font, align=center_align, merge=None, border=None):
         ws[coord] = value
         ws[coord].font = font
-        ws[coord].alignment = center_align
+        ws[coord].alignment = align
+        if border:
+            ws[coord].border = border
         if merge:
             ws.merge_cells(merge)
 
-    set_cell("A1", "الجمهورية الجزائرية الديمقراطية الشعبية", bold_font, "A1:J1")
-    set_cell("A2", "وزارة البريد والمواصلات السلكية واللاسلكية", bold_font, "A2:J2")
-    set_cell("A3", "كشف مصاريف التنقل", Font(name="Arial", size=16, bold=True), "A3:J3")
+    # --- Left Block (Admin & Finance): Cols B to G ---
+    # Header
+    set_cell("B3", "الجمهورية الجزائرية الديمقراطية الشعبية", bold_font, merge="B3:G3")
+    set_cell("B5", "ولايـــــــــــــــــة المنيعــــــــــــــــــــــة", bold_font, merge="B5:G5")
+    set_cell("B6", "مديرية المواصلات السلكية واللاسلكية الوطنية لولاية المنيعة", bold_font, merge="B6:D7")
 
-    set_cell("A5", "الاسم واللقب:", bold_font)
-    set_cell("D5", "الرتبة / الوظيفة:", bold_font)
-    set_cell("G5", "الرقم الاستدلالي:", bold_font)
-    set_cell("A6", "المقر الإداري:", bold_font)
-    set_cell("D6", "طبيعة الحساب:", bold_font)
-    set_cell("G6", "رقم الحساب:", bold_font)
+    set_cell("F6", "الـبــــــاب :", bold_font)
+    set_cell("G6", "2", normal_font)
+    set_cell("F7", "الـمــــادة :", bold_font)
+    set_cell("G7", "21100", normal_font)
 
-    set_cell("A8", "تفاصيل المهمة:", bold_font)
-    set_cell("A9", "سبب التنقل:", bold_font)
-    set_cell("D9", "المسار:", bold_font)
+    # Employee Data Headers
+    set_cell("B11", "السيـــــــــــــد :", bold_font, align=right_align)
+    set_cell("F11", "لـشـهــــــــر :", bold_font, align=right_align)
 
-    set_cell("A11", "تاريخ الذهاب:", bold_font)
-    set_cell("D11", "تاريخ الإياب:", bold_font)
+    set_cell("B12", "الـرتـبــــــــــــة :", bold_font, align=right_align)
+    set_cell("F12", "الوظيفــــــة :", bold_font, align=right_align)
 
-    set_cell("A13", "الوجبات المستحقة:", bold_font)
-    set_cell("D13", "الليالي المستحقة:", bold_font)
+    set_cell("B14", "الرقم الاستدلالي :", bold_font, align=right_align)
+    set_cell("F14", "الصـنــــــــف :", bold_font, align=right_align)
 
-    set_cell("A15", "المجموع المالي:", bold_font)
-    set_cell("D15", "المبلغ بالحروف:", bold_font)
+    set_cell("B15", "المقـــر الإداري :", bold_font, align=right_align)
+    set_cell("F15", "الـبـنـــــــــك :", bold_font, align=right_align)
+    set_cell("G15", "الحســاب البـريــدي الجــاري", normal_font)
 
-    set_cell("A20", "تم إعداد هذا البرنامج من طرف السيد مصباح مراد", Font(name="Arial", size=10, italic=True), "A20:J20")
+    set_cell("F16", "رقم الحساب :", bold_font, align=right_align)
+
+    # Calculations Block
+    set_cell("B17", "التعويضات اليومية :", bold_font, align=right_align)
+
+    # Nord
+    set_cell("E19", "الاكــــــل :", bold_font)
+    set_cell("F19", 800, normal_font)
+    ws['G19'] = "=D19*F19"
+
+    set_cell("E20", ": النــــــوم", bold_font)
+    set_cell("F20", 3200, normal_font)
+    ws['G20'] = "=D20*F20"
+
+    # Sud
+    set_cell("E22", "الاكــــــل :", bold_font)
+    set_cell("F22", 1000, normal_font)
+    ws['G22'] = "=D22*F22"
+
+    set_cell("E23", ": النــــــوم", bold_font)
+    set_cell("F23", 4000, normal_font)
+    ws['G23'] = "=D23*F23"
+
+    set_cell("B25", "المجموع العـــام ( مصاربــف النقـــل + التعويضـات اليوميــة )", bold_font, align=right_align, merge="B25:F25")
+    ws['G25'] = "=SUM(G19:G23)"
+
+    # Tafqeet and Sigs
+    set_cell("B28", "اتعهد صاحب هذه المصاريف بصحة المعلومات اطلب تسديدها", bold_font, align=right_align, merge="B28:G28")
+
+    set_cell("C31", "المنيعــة في :", bold_font)
+    set_cell("G31", "امضــاء المعنـي", bold_font)
+    set_cell("C32", "المديـــر", bold_font)
+
+
+    # --- Right Block (Missions Grid): Cols I to W ---
+    set_cell("I6", "سبب التنقل", bold_font, border=thin_border, merge="I6:I8")
+    set_cell("J6", "المراحل", bold_font, border=thin_border, merge="J6:J8")
+    set_cell("K6", "تاريخ الذهاب والاياب", bold_font, border=thin_border, merge="K6:K8")
+    set_cell("L6", "ساعـة الذهاب و الإيـاب", bold_font, border=thin_border, merge="L6:L8")
+    set_cell("M6", "وسيلة نقل", bold_font, border=thin_border, merge="M6:M8")
+
+    set_cell("N6", "عــــدد التعـويــضــــات", bold_font, border=thin_border, merge="N6:Q6")
+
+    set_cell("N7", "شمــــــال", bold_font, border=thin_border, merge="N7:O7")
+    set_cell("N8", "وجبة", bold_font, border=thin_border)
+    set_cell("O8", "مرقد", bold_font, border=thin_border)
+
+    set_cell("P7", "الجنــوب", bold_font, border=thin_border, merge="P7:Q7")
+    set_cell("P8", "وجبة", bold_font, border=thin_border)
+    set_cell("Q8", "مرقد", bold_font, border=thin_border)
+
+    set_cell("R6", "رقم المهمة", bold_font, border=thin_border, merge="R6:T6")
+    set_cell("R7", "تاريخ المهمة", bold_font, border=thin_border, merge="R7:T8")
+
+    # Bottom Sums Row
+    set_cell("L29", "المجموع", bold_font, border=thin_border, merge="L29:M29")
+    ws['N29'] = "=SUM(N9:N28)"
+    ws['O29'] = "=SUM(O9:O28)"
+    ws['P29'] = "=SUM(P9:P28)"
+    ws['Q29'] = "=SUM(Q9:Q28)"
+
+    # Draw grid borders for the blank areas to ensure it looks like a table
+    for r in range(9, 30):
+        for c in range(9, 21): # I to T
+            col_letter = openpyxl.utils.get_column_letter(c)
+            ws[f"{col_letter}{r}"].border = thin_border
 
     wb.save(template_path)
 
-def generate_excel_report(employee, mission, output_path):
+
+def generate_excel_report(employee, missions, output_path, tafqeet_text):
     template_path = "Template.xlsx"
     if not os.path.exists(template_path):
         create_default_template(template_path)
@@ -54,53 +129,102 @@ def generate_excel_report(employee, mission, output_path):
     wb = openpyxl.load_workbook(template_path)
     ws = wb.active
 
+    center_align = Alignment(horizontal="center", vertical="center", wrap_text=True)
     normal_font = Font(name="Arial", size=11)
 
-    ws['B5'] = employee[1]
-    ws['B5'].font = normal_font
+    # 1. Fill Employee Info
+    ws['C11'] = employee[1]
+    ws.merge_cells("C11:E11")
 
-    ws['E5'] = f"{employee[2]} / {employee[3]}"
-    ws['E5'].font = normal_font
+    # Month assumes we take the month of the first mission or leave blank
+    ws['G11'] = missions[0][4] if missions and len(missions) > 0 else ""
 
-    ws['H5'] = employee[4]
-    ws['H5'].font = normal_font
+    ws['C12'] = employee[2]
+    ws.merge_cells("C12:E13")
 
-    ws['B6'] = employee[6]
-    ws['B6'].font = normal_font
+    ws['G12'] = f"=C12"
+    ws.merge_cells("G12:G13")
 
-    ws['E6'] = employee[7]
-    ws['E6'].font = normal_font
+    ws['C14'] = employee[4]
+    ws.merge_cells("C14:E14")
 
-    ws['H6'] = employee[8]
-    ws['H6'].font = normal_font
+    ws['G14'] = employee[5]
 
-    ws['B9'] = mission[7]
-    ws['B9'].font = normal_font
+    ws['C15'] = employee[6]
+    ws.merge_cells("C15:E15")
 
-    ws['E9'] = mission[8]
-    ws['E9'].font = normal_font
+    ws['G16'] = employee[8]
 
-    ws['B11'] = mission[10]
-    ws['B11'].font = normal_font
+    # 2. Link Sub-totals
+    ws['D19'] = "=N29"
+    ws['D20'] = "=O29"
+    ws['D22'] = "=P29"
+    ws['D23'] = "=Q29"
 
-    ws['E11'] = mission[11]
-    ws['E11'].font = normal_font
+    # 3. Tafqeet Text
+    ws['B29'] = f"أوقِف هذا الكشف عند مبلغ قدره: {tafqeet_text}"
+    ws['B29'].font = Font(name="Arial", size=12, bold=True)
+    ws.merge_cells("B29:G29")
 
-    ws['B13'] = mission[13]
-    ws['B13'].font = normal_font
+    # 4. Fill Missions (Row 9 to 28, max 10 missions since 2 rows per mission)
+    start_row = 9
+    for idx, m in enumerate(missions[:10]):
+        row_dep = start_row + (idx * 2)
+        row_ret = row_dep + 1
 
-    ws['E13'] = mission[14]
-    ws['E13'].font = normal_font
+        # Determine regions
+        n_meals, n_nights, s_meals, s_nights = 0, 0, 0, 0
+        if m[12] == "شمال":
+            n_meals = m[13]
+            n_nights = m[14]
+        else:
+            s_meals = m[13]
+            s_nights = m[14]
 
-    ws['B15'] = f"{mission[15]} دج"
-    ws['B15'].font = normal_font
+        # Parse Departure and Return datetime strings (expected: "DD-MM-YYYY HH:MM")
+        try:
+            dep_parts = m[10].split(' ')
+            dep_date = dep_parts[0]
+            dep_time = dep_parts[1] if len(dep_parts)>1 else ""
 
-    ws['E15'] = mission[16]
-    ws['E15'].font = normal_font
+            ret_parts = m[11].split(' ')
+            ret_date = ret_parts[0]
+            ret_time = ret_parts[1] if len(ret_parts)>1 else ""
+        except:
+            dep_date, dep_time, ret_date, ret_time = "", "", "", ""
 
-    try:
-        ws.merge_cells("E15:I15")
-    except ValueError:
-        pass
+        # Departure Row (row_dep)
+        ws[f"I{row_dep}"] = m[7] # Purpose
+
+        ws[f"J{row_dep}"] = m[8] # Itinerary
+        try: ws.merge_cells(f"J{row_dep}:J{row_ret}")
+        except: pass
+
+        ws[f"K{row_dep}"] = dep_date
+        ws[f"L{row_dep}"] = dep_time
+
+        ws[f"M{row_dep}"] = m[9] # Transport
+        try: ws.merge_cells(f"M{row_dep}:M{row_ret}")
+        except: pass
+
+        ws[f"N{row_dep}"] = n_meals if n_meals > 0 else ""
+        ws[f"O{row_dep}"] = n_nights if n_nights > 0 else ""
+        ws[f"P{row_dep}"] = s_meals if s_meals > 0 else ""
+        ws[f"Q{row_dep}"] = s_nights if s_nights > 0 else ""
+
+        ws[f"R{row_dep}"] = m[5] # Order Num
+        ws[f"S{row_dep}"] = f'=IF(K{row_dep}="","","/")'
+        ws[f"T{row_dep}"] = f'=IF(K{row_dep}="","",YEAR(DATEVALUE(K{row_dep})))'
+
+        # Return Row (row_ret)
+        ws[f"K{row_ret}"] = ret_date
+        ws[f"L{row_ret}"] = ret_time
+        ws[f"R{row_ret}"] = m[6] # Order Date
+
+        # Center align everything in the mission grid
+        for c in range(9, 21):
+            col_letter = openpyxl.utils.get_column_letter(c)
+            ws[f"{col_letter}{row_dep}"].alignment = center_align
+            ws[f"{col_letter}{row_ret}"].alignment = center_align
 
     wb.save(output_path)

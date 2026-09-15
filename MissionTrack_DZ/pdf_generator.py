@@ -1,7 +1,8 @@
-from reportlab.lib.pagesizes import A4
+from reportlab.lib.pagesizes import A4, landscape
 from reportlab.pdfgen import canvas
 from reportlab.pdfbase import pdfmetrics
 from reportlab.pdfbase.ttfonts import TTFont
+from reportlab.lib import colors
 import arabic_reshaper
 from bidi.algorithm import get_display
 import os
@@ -11,8 +12,7 @@ def render_arabic(text):
     reshaped_text = arabic_reshaper.reshape(str(text))
     return get_display(reshaped_text)
 
-def generate_pdf_report(employee, mission, output_path):
-    # Register Font
+def generate_pdf_report(employee, missions, output_path, tafqeet_text):
     font_path = "Amiri.ttf"
     if os.path.exists(font_path):
         pdfmetrics.registerFont(TTFont('Amiri', font_path))
@@ -20,106 +20,131 @@ def generate_pdf_report(employee, mission, output_path):
     else:
         font_name = 'Helvetica'
 
-    c = canvas.Canvas(output_path, pagesize=A4)
-    width, height = A4
+    # Switch to Landscape A4 for wide table
+    c = canvas.Canvas(output_path, pagesize=landscape(A4))
+    width, height = landscape(A4)
 
-    # --- Header ---
-    c.setFont(font_name, 14)
-    c.drawCentredString(width / 2.0, height - 50, render_arabic("الجمهورية الجزائرية الديمقراطية الشعبية"))
-    c.drawCentredString(width / 2.0, height - 70, render_arabic("وزارة البريد والمواصلات السلكية واللاسلكية"))
+    # Margins and layout
+    margin = 30
+    grid_start_x = width - margin - 450 # Right side for Mission Grid (450px wide)
+    admin_start_x = width - margin      # Extreme right for Admin block (but draws leftwards)
 
-    c.setFont(font_name, 18)
-    c.drawCentredString(width / 2.0, height - 120, render_arabic("كشف مصاريف التنقل"))
-
-    # --- Employee Info ---
+    # --- Left Block (Admin & Finance) ---
     c.setFont(font_name, 12)
-    start_y = height - 160
-    margin = 50
-    right_margin = width - margin
+    start_y = height - 40
 
-    # Row 1
-    c.drawRightString(right_margin, start_y, render_arabic(f"الاسم واللقب: {employee[1]}"))
-    c.drawRightString(right_margin - 200, start_y, render_arabic(f"الرتبة / الوظيفة: {employee[2]} / {employee[3]}"))
-    c.drawRightString(right_margin - 400, start_y, render_arabic(f"الرقم الاستدلالي: {employee[4]}"))
+    c.drawRightString(admin_start_x, start_y, render_arabic("الجمهورية الجزائرية الديمقراطية الشعبية"))
+    start_y -= 20
+    c.drawRightString(admin_start_x, start_y, render_arabic("ولايـــــــــــــــــة المنيعــــــــــــــــــــــة"))
+    start_y -= 20
+    c.drawRightString(admin_start_x, start_y, render_arabic("مديرية المواصلات السلكية واللاسلكية الوطنية لولاية المنيعة"))
 
-    # Row 2
     start_y -= 30
-    c.drawRightString(right_margin, start_y, render_arabic(f"المقر الإداري: {employee[6]}"))
-    c.drawRightString(right_margin - 200, start_y, render_arabic(f"طبيعة الحساب: {employee[7]}"))
-    c.drawRightString(right_margin - 400, start_y, render_arabic(f"رقم الحساب: {employee[8]}"))
-
-    # --- Mission Detail ---
-    start_y -= 50
     c.setFont(font_name, 14)
-    c.drawRightString(right_margin, start_y, render_arabic("تفاصيل المهمة:"))
+    c.drawRightString(admin_start_x - 50, start_y, render_arabic("كشف مصاريف التنقل"))
 
-    c.setFont(font_name, 12)
-    start_y -= 30
-    c.drawRightString(right_margin, start_y, render_arabic(f"رقم وتاريخ الأمر: {mission[5]} - {mission[6]}"))
-    c.drawRightString(right_margin - 250, start_y, render_arabic(f"سبب التنقل: {mission[7]}"))
+    # Employee Details
+    c.setFont(font_name, 11)
+    start_y -= 40
+    c.drawRightString(admin_start_x, start_y, render_arabic(f"السيـــــــــــــد : {employee[1]}"))
+    start_y -= 20
+    c.drawRightString(admin_start_x, start_y, render_arabic(f"الـرتـبــــــــــــة : {employee[2]}"))
+    start_y -= 20
+    c.drawRightString(admin_start_x, start_y, render_arabic(f"الرقم الاستدلالي : {employee[4]}"))
+    start_y -= 20
+    c.drawRightString(admin_start_x, start_y, render_arabic(f"المقـــر الإداري : {employee[6]}"))
+    start_y -= 20
+    c.drawRightString(admin_start_x, start_y, render_arabic(f"رقم الحساب : {employee[8]}"))
 
-    start_y -= 30
-    c.drawRightString(right_margin, start_y, render_arabic(f"المسار: {mission[8]}"))
-    c.drawRightString(right_margin - 250, start_y, render_arabic(f"وسيلة النقل: {mission[9]}"))
-
-    start_y -= 30
-    c.drawRightString(right_margin, start_y, render_arabic(f"تاريخ الذهاب: {mission[10]}"))
-    c.drawRightString(right_margin - 250, start_y, render_arabic(f"تاريخ الإياب: {mission[11]}"))
-
-    start_y -= 30
-    c.drawRightString(right_margin, start_y, render_arabic(f"المنطقة: {mission[12]}"))
-
-    # --- Calculation Table ---
-    start_y -= 50
-    c.setFont(font_name, 12)
-
-    col_widths = [100, 100, 100, 100]
-    total_w = sum(col_widths)
-    start_x = width/2 - total_w/2
-
-    # Headers
-    c.rect(start_x, start_y, col_widths[0], 25)
-    c.rect(start_x+col_widths[0], start_y, col_widths[1], 25)
-    c.rect(start_x+col_widths[0]*2, start_y, col_widths[2], 25)
-    c.rect(start_x+col_widths[0]*3, start_y, col_widths[3], 25)
-
-    c.drawCentredString(start_x + col_widths[0]*3.5, start_y + 8, render_arabic("عدد الوجبات"))
-    c.drawCentredString(start_x + col_widths[0]*2.5, start_y + 8, render_arabic("المبلغ للوجبات"))
-    c.drawCentredString(start_x + col_widths[0]*1.5, start_y + 8, render_arabic("عدد الليالي"))
-    c.drawCentredString(start_x + col_widths[0]*0.5, start_y + 8, render_arabic("المبلغ لليالي"))
-
-    # Values
-    start_y -= 25
-    rate = 800 if mission[12] == "شمال" else 1000
-    n_rate = 3200 if mission[12] == "شمال" else 4000
-    m_amt = mission[13] * rate
-    n_amt = mission[14] * n_rate
-
-    c.rect(start_x, start_y, col_widths[0], 25)
-    c.rect(start_x+col_widths[0], start_y, col_widths[1], 25)
-    c.rect(start_x+col_widths[0]*2, start_y, col_widths[2], 25)
-    c.rect(start_x+col_widths[0]*3, start_y, col_widths[3], 25)
-
-    c.drawCentredString(start_x + col_widths[0]*3.5, start_y + 8, render_arabic(str(mission[13])))
-    c.drawCentredString(start_x + col_widths[0]*2.5, start_y + 8, render_arabic(f"{m_amt} دج"))
-    c.drawCentredString(start_x + col_widths[0]*1.5, start_y + 8, render_arabic(str(mission[14])))
-    c.drawCentredString(start_x + col_widths[0]*0.5, start_y + 8, render_arabic(f"{n_amt} دج"))
-
-    # --- Footer Totals ---
-    start_y -= 60
-    c.setFont(font_name, 14)
-    c.drawRightString(right_margin, start_y, render_arabic(f"المجموع العام: {mission[15]} دج"))
-    start_y -= 30
-    c.drawRightString(right_margin, start_y, render_arabic(f"المبلغ بالحروف: {mission[16]}"))
-
-    # --- Signatures ---
-    start_y -= 80
-    c.drawRightString(right_margin, start_y, render_arabic("إمضاء المعني بالأمر"))
-    c.drawString(margin + 50, start_y, render_arabic("تأشيرة السيد المدير الآمر بالصرف"))
-
-    # --- Credits ---
+    # --- Right Block (Missions Grid) ---
+    # Draw Table Headers
+    table_y = height - 50
     c.setFont(font_name, 10)
-    c.drawCentredString(width / 2.0, 30, render_arabic("تم إعداد هذا البرنامج (MissionTrack DZ) من طرف السيد مصباح مراد"))
+
+    col_w = [60, 100, 60, 50, 60, 30, 30, 30, 30]
+    headers = ["سبب التنقل", "المراحل", "تاريخ", "ساعة", "وسيلة النقل", "وجبة(ش)", "نوم(ش)", "وجبة(ج)", "نوم(ج)"]
+
+    cur_x = grid_start_x
+    for i, h in enumerate(headers):
+        c.rect(cur_x, table_y, col_w[i], 30)
+        c.drawCentredString(cur_x + (col_w[i]/2), table_y + 10, render_arabic(h))
+        cur_x += col_w[i]
+
+    # Draw Mission Rows
+    table_y -= 20
+
+    total_n_m = total_n_n = total_s_m = total_s_n = 0
+
+    for m in missions[:10]: # Max 10 missions
+        try:
+            d_date, d_time = m[10].split(' ')[0], m[10].split(' ')[1]
+            r_date, r_time = m[11].split(' ')[0], m[11].split(' ')[1]
+        except:
+            d_date = d_time = r_date = r_time = ""
+
+        n_meals = m[13] if m[12] == "شمال" else 0
+        n_nights = m[14] if m[12] == "شمال" else 0
+        s_meals = m[13] if m[12] == "جنوب" else 0
+        s_nights = m[14] if m[12] == "جنوب" else 0
+
+        total_n_m += n_meals
+        total_n_n += n_nights
+        total_s_m += s_meals
+        total_s_n += s_nights
+
+        # Departure Row
+        cur_x = grid_start_x
+        row_data_dep = [m[7], m[8], d_date, d_time, m[9], str(n_meals or ""), str(n_nights or ""), str(s_meals or ""), str(s_nights or "")]
+        for i, val in enumerate(row_data_dep):
+            c.rect(cur_x, table_y, col_w[i], 20)
+            c.drawCentredString(cur_x + (col_w[i]/2), table_y + 6, render_arabic(val))
+            cur_x += col_w[i]
+
+        table_y -= 20
+
+        # Return Row
+        cur_x = grid_start_x
+        row_data_ret = ["", "", r_date, r_time, "", "", "", "", ""]
+        for i, val in enumerate(row_data_ret):
+            c.rect(cur_x, table_y, col_w[i], 20)
+            c.drawCentredString(cur_x + (col_w[i]/2), table_y + 6, render_arabic(val))
+            cur_x += col_w[i]
+
+        table_y -= 20
+
+    # Draw Totals Row
+    cur_x = grid_start_x + sum(col_w[:5])
+    c.rect(grid_start_x, table_y, sum(col_w[:5]), 20)
+    c.drawCentredString(grid_start_x + sum(col_w[:5])/2, table_y + 6, render_arabic("المجموع"))
+
+    totals = [str(total_n_m), str(total_n_n), str(total_s_m), str(total_s_n)]
+    for i, val in enumerate(totals):
+        c.rect(cur_x, table_y, col_w[5+i], 20)
+        c.drawCentredString(cur_x + (col_w[5+i]/2), table_y + 6, render_arabic(val))
+        cur_x += col_w[5+i]
+
+    # --- Financial Calculation Box (Bottom Left) ---
+    c.setFont(font_name, 11)
+    fin_y = start_y - 40
+    c.drawRightString(admin_start_x, fin_y, render_arabic("التعويضات اليومية:"))
+
+    grand_total = (total_n_m * 800) + (total_n_n * 3200) + (total_s_m * 1000) + (total_s_n * 4000)
+
+    fin_y -= 20
+    c.drawRightString(admin_start_x, fin_y, render_arabic(f"الشمال: أكل ({total_n_m}) = {total_n_m * 800} دج | نوم ({total_n_n}) = {total_n_n * 3200} دج"))
+    fin_y -= 20
+    c.drawRightString(admin_start_x, fin_y, render_arabic(f"الجنوب: أكل ({total_s_m}) = {total_s_m * 1000} دج | نوم ({total_s_n}) = {total_s_n * 4000} دج"))
+
+    fin_y -= 30
+    c.setFont(font_name, 12)
+    c.drawRightString(admin_start_x, fin_y, render_arabic(f"المجموع العام: {grand_total} دج"))
+    fin_y -= 25
+    c.drawRightString(admin_start_x, fin_y, render_arabic(f"أوقِف هذا الكشف عند مبلغ قدره: {tafqeet_text}"))
+
+    # Signatures
+    fin_y -= 50
+    c.drawRightString(admin_start_x, fin_y, render_arabic("امضــاء المعنـي"))
+    c.drawString(admin_start_x - 300, fin_y, render_arabic("تأشيرة السيد المدير الآمر بالصرف"))
 
     c.showPage()
     c.save()

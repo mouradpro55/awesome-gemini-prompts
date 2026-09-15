@@ -45,7 +45,6 @@ def employees():
 @app.route('/missions', methods=['GET', 'POST'])
 def missions():
     emps = database.get_all_employees()
-    # Default to first employee's missions
     selected_emp_id = request.args.get('emp_id')
     if not selected_emp_id and emps:
         selected_emp_id = str(emps[0][0])
@@ -98,28 +97,30 @@ def calc_preview():
     t_txt = tafqeet(tot)
     return jsonify({'meals': m_count, 'nights': n_count, 'total': tot, 'text': t_txt})
 
-@app.route('/export/<type>/<emp_id>/<mission_id>')
-def export_report(type, emp_id, mission_id):
+@app.route('/export/<type>/<emp_id>')
+def export_report(type, emp_id):
     emp = database.get_employee(int(emp_id))
     missions_list = database.get_missions_for_employee(int(emp_id))
-    mission = next((m for m in missions_list if str(m[0]) == str(mission_id)), None)
 
-    if not emp or not mission:
-        return "Data not found", 404
+    if not emp or not missions_list:
+        return "لا توجد بيانات أو مهمات لهذا الموظف لتصديرها", 404
+
+    # Recalculate Grand Total for Tafqeet
+    grand_total = sum(m[14] for m in missions_list)
+    tafqeet_text = tafqeet(grand_total)
 
     if type == "pdf":
-        path = f"report_{emp_id}_{mission_id}.pdf"
-        generate_pdf_report(emp, mission, path)
+        path = f"report_employee_{emp_id}.pdf"
+        generate_pdf_report(emp, missions_list, path, tafqeet_text)
         return send_file(path, as_attachment=True)
     elif type == "excel":
-        path = f"report_{emp_id}_{mission_id}.xlsx"
-        generate_excel_report(emp, mission, path)
+        path = f"report_employee_{emp_id}.xlsx"
+        generate_excel_report(emp, missions_list, path, tafqeet_text)
         return send_file(path, as_attachment=True)
 
     return "Invalid type", 400
 
 def run_app():
-    # Avoid auto-reloader issues with webbrowser
     app.run(port=5000, debug=False, use_reloader=False)
 
 if __name__ == '__main__':
