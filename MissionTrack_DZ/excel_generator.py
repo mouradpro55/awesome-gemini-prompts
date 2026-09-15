@@ -29,6 +29,21 @@ def create_default_template(template_path):
     for col_letter, width in col_widths.items():
         ws.column_dimensions[col_letter].width = width
 
+    # Apply precise Row Heights
+    ws.row_dimensions[3].height = 22.5
+    ws.row_dimensions[4].height = 9.0
+    ws.row_dimensions[5].height = 22.5
+    ws.row_dimensions[6].height = 25.5
+    ws.row_dimensions[7].height = 17.4
+    ws.row_dimensions[8].height = 17.4
+    ws.row_dimensions[9].height = 26.25
+    ws.row_dimensions[10].height = 23.25
+    for r in range(11, 29):
+        ws.row_dimensions[r].height = 18.9
+    ws.row_dimensions[29].height = 32.25
+    ws.row_dimensions[31].height = 17.4
+    ws.row_dimensions[32].height = 24.0
+
     # Styling helpers
     bold_font = Font(name="Arial", size=11, bold=True)
     normal_font = Font(name="Arial", size=11)
@@ -37,6 +52,8 @@ def create_default_template(template_path):
 
     thin_border = Border(left=Side(style='thin'), right=Side(style='thin'),
                          top=Side(style='thin'), bottom=Side(style='thin'))
+    dotted_inner = Border(left=Side(style='thin'), right=Side(style='thin'),
+                          top=Side(style='dashDotDot'), bottom=Side(style='dashDotDot'))
 
     def set_cell(coord, value, font, align=center_align, merge=None, border=None):
         ws[coord] = value
@@ -137,10 +154,18 @@ def create_default_template(template_path):
     ws['Q29'] = "=SUM(Q9:Q28)"
 
     # Draw grid borders for the blank areas to ensure it looks like a table
-    for r in range(9, 30):
+    for r in range(9, 29):
         for c in range(9, 21): # I to T
             col_letter = openpyxl.utils.get_column_letter(c)
-            ws[f"{col_letter}{r}"].border = thin_border
+            if r >= 11:
+                ws[f"{col_letter}{r}"].border = dotted_inner
+            else:
+                ws[f"{col_letter}{r}"].border = thin_border
+
+    # Bottom totals border
+    for c in range(9, 21):
+        col_letter = openpyxl.utils.get_column_letter(c)
+        ws[f"{col_letter}29"].border = thin_border
 
     wb.save(template_path)
 
