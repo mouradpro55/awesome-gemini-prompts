@@ -90,13 +90,13 @@
             {% for m in missions %}
             <tr>
                 <td class="px-5 py-5 border-b text-sm">
-                    <strong>{{ m[4] }}</strong><br><span class="text-gray-500">{{ m[6] }}</span>
+                    <strong>{{ m[5] }}</strong><br><span class="text-gray-500">{{ m[7] }}</span>
                 </td>
                 <td class="px-5 py-5 border-b text-sm" dir="ltr" style="text-align: right;">
-                    {{ m[9] }}<br>{{ m[10] }}
+                    {{ m[10] }}<br>{{ m[11] }}
                 </td>
                 <td class="px-5 py-5 border-b text-sm font-bold text-green-700">
-                    {{ m[14] }} دج<br><span class="text-xs text-gray-500">{{ m[12] }} وجبة, {{ m[13] }} ليلة</span>
+                    {{ m[15] }} دج<br><span class="text-xs text-gray-500">{{ m[13] }} وجبة, {{ m[14] }} ليلة</span>
                 </td>
                 <td class="px-5 py-5 border-b text-sm text-center">
                     <form method="POST" action="{{ url_for('missions') }}" onsubmit="return confirm('تأكيد الحذف؟');">

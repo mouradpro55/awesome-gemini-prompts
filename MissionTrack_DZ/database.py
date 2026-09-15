@@ -81,6 +81,18 @@ def add_employee(data):
     conn.commit()
     conn.close()
 
+def update_employee(emp_id, data):
+    conn = get_connection()
+    cursor = conn.cursor()
+    cursor.execute("""
+        UPDATE employees
+        SET full_name=?, rank=?, job_title=?, index_number=?, category=?, workplace=?, bank_type=?, bank_account=?
+        WHERE id=?
+    """, (data.get('full_name'), data.get('rank'), data.get('job_title'), data.get('index_number'),
+          data.get('category'), data.get('workplace'), data.get('bank_type'), data.get('bank_account'), emp_id))
+    conn.commit()
+    conn.close()
+
 def delete_employee(emp_id):
     conn = get_connection()
     cursor = conn.cursor()

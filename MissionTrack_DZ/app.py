@@ -33,6 +33,20 @@ def employees():
             }
             if data['full_name']:
                 database.add_employee(data)
+        elif action == 'edit':
+            emp_id = request.form.get('emp_id')
+            data = {
+                'full_name': request.form.get('name'),
+                'rank': request.form.get('rank'),
+                'job_title': request.form.get('job'),
+                'index_number': request.form.get('index'),
+                'category': request.form.get('category'),
+                'workplace': request.form.get('workplace'),
+                'bank_type': request.form.get('bank_type'),
+                'bank_account': request.form.get('bank_account')
+            }
+            if emp_id and data['full_name']:
+                database.update_employee(int(emp_id), data)
         elif action == 'delete':
             emp_id = request.form.get('emp_id')
             if emp_id:

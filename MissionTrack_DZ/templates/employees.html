@@ -2,49 +2,53 @@
 {% block content %}
 <h2 class="text-3xl font-bold mb-6 text-slate-800">إدارة الموظفين</h2>
 
-<!-- Add Form -->
+<!-- Add/Edit Form -->
 <div class="bg-white p-6 rounded-lg shadow mb-8">
-    <h3 class="text-xl font-bold mb-4">إضافة موظف جديد</h3>
-    <form method="POST" action="{{ url_for('employees') }}" class="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <input type="hidden" name="action" value="add">
+    <h3 class="text-xl font-bold mb-4" id="form-title">إضافة موظف جديد</h3>
+    <form method="POST" action="{{ url_for('employees') }}" class="grid grid-cols-1 md:grid-cols-2 gap-4" id="employee-form">
+        <input type="hidden" name="action" id="form-action" value="add">
+        <input type="hidden" name="emp_id" id="form-emp-id" value="">
 
         <div>
             <label class="block text-gray-700 text-sm font-bold mb-2">الاسم واللقب</label>
-            <input type="text" name="name" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" required>
+            <input type="text" id="name" name="name" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" required>
         </div>
         <div>
             <label class="block text-gray-700 text-sm font-bold mb-2">الرتبة</label>
-            <input type="text" name="rank" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
+            <input type="text" id="rank" name="rank" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
         </div>
         <div>
             <label class="block text-gray-700 text-sm font-bold mb-2">الوظيفة</label>
-            <input type="text" name="job" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
+            <input type="text" id="job" name="job" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
         </div>
         <div>
             <label class="block text-gray-700 text-sm font-bold mb-2">الرقم الاستدلالي</label>
-            <input type="text" name="index" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
+            <input type="text" id="index" name="index" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
         </div>
         <div>
             <label class="block text-gray-700 text-sm font-bold mb-2">الصنف</label>
-            <input type="text" name="category" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
+            <input type="text" id="category" name="category" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
         </div>
         <div>
             <label class="block text-gray-700 text-sm font-bold mb-2">المقر الإداري</label>
-            <input type="text" name="workplace" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
+            <input type="text" id="workplace" name="workplace" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
         </div>
         <div>
             <label class="block text-gray-700 text-sm font-bold mb-2">طبيعة الحساب</label>
-            <select name="bank_type" class="shadow border rounded w-full py-2 px-3 text-gray-700 bg-white focus:outline-none focus:shadow-outline">
+            <select id="bank_type" name="bank_type" class="shadow border rounded w-full py-2 px-3 text-gray-700 bg-white focus:outline-none focus:shadow-outline">
                 <option>CCP</option><option>BNA</option><option>BEA</option><option>CPA</option><option>BADR</option>
             </select>
         </div>
         <div>
             <label class="block text-gray-700 text-sm font-bold mb-2">رقم الحساب</label>
-            <input type="text" name="bank_account" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
+            <input type="text" id="bank_account" name="bank_account" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
         </div>
         <div class="col-span-1 md:col-span-2 text-center mt-4">
-            <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-8 rounded focus:outline-none focus:shadow-outline">
+            <button type="submit" id="submit-btn" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-8 rounded focus:outline-none focus:shadow-outline">
                 حفظ الموظف
+            </button>
+            <button type="button" id="cancel-btn" onclick="resetForm()" class="hidden bg-gray-500 hover:bg-gray-600 text-white font-bold py-2 px-8 rounded focus:outline-none focus:shadow-outline mr-2">
+                إلغاء التعديل
             </button>
         </div>
     </form>
@@ -67,8 +71,9 @@
                 <td class="px-5 py-5 border-b border-gray-200 text-sm">{{ emp[0] }}</td>
                 <td class="px-5 py-5 border-b border-gray-200 text-sm font-bold">{{ emp[1] }}</td>
                 <td class="px-5 py-5 border-b border-gray-200 text-sm">{{ emp[2] }}</td>
-                <td class="px-5 py-5 border-b border-gray-200 text-sm">
-                    <form method="POST" action="{{ url_for('employees') }}" onsubmit="return confirm('هل أنت متأكد من الحذف؟');">
+                <td class="px-5 py-5 border-b border-gray-200 text-sm flex gap-4">
+                    <button type="button" onclick="editEmployee('{{ emp[0] }}', '{{ emp[1] }}', '{{ emp[2] }}', '{{ emp[3] }}', '{{ emp[4] }}', '{{ emp[5] }}', '{{ emp[6] }}', '{{ emp[7] }}', '{{ emp[8] }}')" class="text-blue-600 hover:text-blue-900 font-bold">تعديل</button>
+                    <form method="POST" action="{{ url_for('employees') }}" class="inline" onsubmit="return confirm('هل أنت متأكد من الحذف؟ سيتم حذف جميع المهام التابعة له أيضاً.');">
                         <input type="hidden" name="action" value="delete">
                         <input type="hidden" name="emp_id" value="{{ emp[0] }}">
                         <button type="submit" class="text-red-600 hover:text-red-900 font-bold">حذف</button>
@@ -79,4 +84,40 @@
         </tbody>
     </table>
 </div>
+
+<script>
+function editEmployee(id, name, rank, job, index, category, workplace, bank_type, bank_account) {
+    document.getElementById('form-action').value = 'edit';
+    document.getElementById('form-emp-id').value = id;
+
+    document.getElementById('form-title').innerText = 'تعديل بيانات الموظف';
+    document.getElementById('submit-btn').innerText = 'حفظ التعديلات';
+    document.getElementById('submit-btn').classList.replace('bg-blue-600', 'bg-green-600');
+    document.getElementById('submit-btn').classList.replace('hover:bg-blue-700', 'hover:bg-green-700');
+    document.getElementById('cancel-btn').classList.remove('hidden');
+
+    document.getElementById('name').value = name;
+    document.getElementById('rank').value = rank !== 'None' ? rank : '';
+    document.getElementById('job').value = job !== 'None' ? job : '';
+    document.getElementById('index').value = index !== 'None' ? index : '';
+    document.getElementById('category').value = category !== 'None' ? category : '';
+    document.getElementById('workplace').value = workplace !== 'None' ? workplace : '';
+    document.getElementById('bank_type').value = bank_type;
+    document.getElementById('bank_account').value = bank_account !== 'None' ? bank_account : '';
+
+    window.scrollTo(0, 0);
+}
+
+function resetForm() {
+    document.getElementById('employee-form').reset();
+    document.getElementById('form-action').value = 'add';
+    document.getElementById('form-emp-id').value = '';
+
+    document.getElementById('form-title').innerText = 'إضافة موظف جديد';
+    document.getElementById('submit-btn').innerText = 'حفظ الموظف';
+    document.getElementById('submit-btn').classList.replace('bg-green-600', 'bg-blue-600');
+    document.getElementById('submit-btn').classList.replace('hover:bg-green-700', 'hover:bg-blue-700');
+    document.getElementById('cancel-btn').classList.add('hidden');
+}
+</script>
 {% endblock %}
