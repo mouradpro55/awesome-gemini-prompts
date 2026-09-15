@@ -40,18 +40,13 @@ def generate_excel_report(employee, missions, output_path, tafqeet_text):
 
     safe_write("G16", employee[8])
 
-    # 2. Link Sub-totals
-    safe_write("D19", "=N29")
-    safe_write("D20", "=O29")
-    safe_write("D22", "=P29")
-    safe_write("D23", "=Q29")
+    # Track Totals
+    total_n_meals = 0
+    total_n_nights = 0
+    total_s_meals = 0
+    total_s_nights = 0
 
-    # 3. Tafqeet Text
-    if not tafqeet_text.endswith("دينار جزائري"):
-        tafqeet_text += " دينار جزائري"
-    safe_write("B29", f"أوقِف هذا الكشف عند مبلغ قدره: {tafqeet_text} تماماً")
-
-    # 4. Fill Missions (Row 9 to 28, max 10 missions since 2 rows per mission)
+    # 2. Fill Missions (Row 9 to 28, max 10 missions since 2 rows per mission)
     start_row = 9
     for idx, m in enumerate(missions[:10]):
         row_dep = start_row + (idx * 2)
@@ -62,9 +57,13 @@ def generate_excel_report(employee, missions, output_path, tafqeet_text):
         if m[12] == "شمال":
             n_meals = m[13]
             n_nights = m[14]
+            total_n_meals += n_meals
+            total_n_nights += n_nights
         else:
             s_meals = m[13]
             s_nights = m[14]
+            total_s_meals += s_meals
+            total_s_nights += s_nights
 
         # Parse Departure and Return datetime strings (expected: "DD-MM-YYYY HH:MM")
         try:
@@ -101,5 +100,32 @@ def generate_excel_report(employee, missions, output_path, tafqeet_text):
         safe_write(f"K{row_ret}", ret_date)
         safe_write(f"L{row_ret}", ret_time)
         safe_write(f"R{row_ret}", m[6]) # Order Date
+
+    # 3. Write hardcoded calculations
+    safe_write("N29", total_n_meals if total_n_meals > 0 else "")
+    safe_write("O29", total_n_nights if total_n_nights > 0 else "")
+    safe_write("P29", total_s_meals if total_s_meals > 0 else "")
+    safe_write("Q29", total_s_nights if total_s_nights > 0 else "")
+
+    safe_write("D19", total_n_meals if total_n_meals > 0 else "")
+    safe_write("D20", total_n_nights if total_n_nights > 0 else "")
+    safe_write("D22", total_s_meals if total_s_meals > 0 else "")
+    safe_write("D23", total_s_nights if total_s_nights > 0 else "")
+
+    safe_write("G19", (total_n_meals * 800) if total_n_meals > 0 else "")
+    safe_write("G20", (total_n_nights * 3200) if total_n_nights > 0 else "")
+    safe_write("G22", (total_s_meals * 1000) if total_s_meals > 0 else "")
+    safe_write("G23", (total_s_nights * 4000) if total_s_nights > 0 else "")
+
+    grand_total = (total_n_meals * 800) + (total_n_nights * 3200) + (total_s_meals * 1000) + (total_s_nights * 4000)
+    safe_write("G25", grand_total if grand_total > 0 else "")
+
+    # 4. Tafqeet Text
+    if grand_total > 0:
+        if not tafqeet_text.endswith("دينار جزائري"):
+            tafqeet_text += " دينار جزائري"
+        safe_write("B29", f"أوقِف هذا الكشف عند مبلغ قدره: {tafqeet_text} تماماً")
+    else:
+        safe_write("B29", "")
 
     wb.save(output_path)
