@@ -1,0 +1,6 @@
+reportlab
+openpyxl
+pyinstaller
+arabic-reshaper
+python-bidi
+PyQt6
