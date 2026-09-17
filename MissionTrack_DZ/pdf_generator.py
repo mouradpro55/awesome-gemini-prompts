@@ -7,6 +7,7 @@ from reportlab.pdfbase import pdfmetrics
 from reportlab.pdfbase.ttfonts import TTFont
 import arabic_reshaper
 from bidi.algorithm import get_display
+from resource_utils import resource_path
 
 def ar(text):
     if text is None or text == "":
@@ -15,7 +16,7 @@ def ar(text):
     return get_display(reshaped)
 
 def generate_pdf_report(employee, missions, output_path, tafqeet_text, settings=None):
-    font_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "Amiri.ttf")
+    font_path = resource_path("Amiri.ttf")
     if os.path.exists(font_path):
         pdfmetrics.registerFont(TTFont('AmiriFont', font_path))
         font_name = 'AmiriFont'

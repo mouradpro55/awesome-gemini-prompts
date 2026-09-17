@@ -1,6 +1,7 @@
 import openpyxl
 import os
 from tafqeet import tafqeet
+from resource_utils import resource_path
 
 def sanitize_sheet_title(title, existing_titles):
     invalid_chars = r'\/?*:][\''
@@ -159,7 +160,7 @@ def populate_employee_sheet(ws, employee, missions, tafqeet_text, settings=None)
 
 
 def generate_excel_report(employee, missions, output_path, tafqeet_text, settings=None):
-    template_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "Template.xlsx")
+    template_path = resource_path("Template.xlsx")
 
     if not os.path.exists(template_path):
         raise FileNotFoundError(f"ملف القالب الأصلي غير موجود في المسار: {template_path}. يرجى وضع Template.xlsx بجانب البرنامج.")
@@ -173,7 +174,7 @@ def generate_excel_report(employee, missions, output_path, tafqeet_text, setting
 
 def generate_consolidated_excel_report(employees_data, output_path, template_path="Template.xlsx", settings=None):
     if not os.path.isabs(template_path):
-        template_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), template_path)
+        template_path = resource_path(template_path)
 
     if not os.path.exists(template_path):
         raise FileNotFoundError(f"ملف القالب الأصلي غير موجود في المسار: {template_path}. يرجى وضع Template.xlsx بجانب البرنامج.")

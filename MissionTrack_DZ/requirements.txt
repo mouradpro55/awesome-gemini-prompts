@@ -4,3 +4,4 @@ openpyxl
 pyinstaller
 arabic-reshaper
 python-bidi
+pywebview

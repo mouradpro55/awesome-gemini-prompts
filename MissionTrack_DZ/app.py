@@ -1,4 +1,5 @@
 from flask import Flask, render_template, request, redirect, url_for, jsonify, send_file
+from resource_utils import resource_path
 import webbrowser
 import threading
 import os
@@ -8,7 +9,9 @@ from tafqeet import tafqeet
 from pdf_generator import generate_pdf_report
 from excel_generator import generate_excel_report
 
-app = Flask(__name__)
+template_dir = resource_path('templates')
+static_dir = resource_path('static') # optional if used later
+app = Flask(__name__, template_folder=template_dir, static_folder=static_dir)
 database.init_db()
 
 @app.route('/')
@@ -216,10 +219,3 @@ def export_all_excel():
     generate_consolidated_excel_report(employees_data, output_filename, settings=database.get_settings())
 
     return send_file(output_filename, as_attachment=True)
-
-def run_app():
-    app.run(port=5000, debug=False, use_reloader=False)
-
-if __name__ == '__main__':
-    threading.Timer(1.5, lambda: webbrowser.open("http://127.0.0.1:5000")).start()
-    run_app()

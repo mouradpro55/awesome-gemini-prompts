@@ -1,10 +1,19 @@
 import sqlite3
 import os
 
-DB_NAME = "missiontrack.db"
+def get_app_dir():
+    if os.name == 'nt':
+        base_dir = os.environ.get('APPDATA', os.path.expanduser('~'))
+    else:
+        base_dir = os.path.expanduser('~')
+    app_dir = os.path.join(base_dir, 'MissionTrack_DZ')
+    os.makedirs(app_dir, exist_ok=True)
+    return app_dir
+
+DB_PATH = os.path.join(get_app_dir(), 'missiontrack.db')
 
 def get_connection():
-    return sqlite3.connect(DB_NAME)
+    return sqlite3.connect(DB_PATH)
 
 def init_db():
     conn = get_connection()
