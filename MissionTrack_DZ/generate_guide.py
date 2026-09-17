@@ -89,8 +89,9 @@ def create_manual():
 
     # Footer
     c.setFont(font_name, 10)
-    c.drawCentredString(width / 2.0, 50, render_arabic("تم تطوير وبناء هذا النظام بواسطة: السيد مصباح مراد"))
-    c.drawCentredString(width / 2.0, 35, render_arabic("النسخة 1.0 - جميع الحقوق محفوظة للإدارة"))
+    c.drawCentredString(width / 2.0, 55, render_arabic("تم تطوير وبناء هذا النظام بواسطة: السيد مصباح مراد - مديرية المواصلات السلكية واللاسلكية لولاية المنيعة"))
+    c.drawCentredString(width / 2.0, 40, render_arabic("الهاتف: 0770112818 | البريد الإلكتروني: m.elgolea47@gmail.com"))
+    c.drawCentredString(width / 2.0, 25, render_arabic("تحت إشراف: DTN بن طراري إبراهيم خليل | جميع الحقوق محفوظة للإدارة 2026"))
 
     c.showPage()
     c.save()

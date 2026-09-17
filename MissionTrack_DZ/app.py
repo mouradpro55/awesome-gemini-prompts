@@ -1,5 +1,6 @@
 from flask import Flask, render_template, request, redirect, url_for, jsonify, send_file
 from resource_utils import resource_path
+import subprocess
 import webbrowser
 import threading
 import os
@@ -7,7 +8,26 @@ import database
 from calculator import calculate_allowances
 from tafqeet import tafqeet
 from pdf_generator import generate_pdf_report
-from excel_generator import generate_excel_report
+from excel_generator import generate_excel_report, generate_consolidated_excel_report
+
+def get_user_downloads_dir():
+    home = os.path.expanduser("~")
+    downloads = os.path.join(home, "Downloads")
+    if not os.path.exists(downloads):
+        downloads = os.path.join(home, "Documents")
+    if not os.path.exists(downloads):
+        os.makedirs(downloads, exist_ok=True)
+    return downloads
+
+def open_file_externally(filepath):
+    try:
+        if os.name == 'nt':
+            os.startfile(filepath)
+        else:
+            subprocess.Popen(['xdg-open', filepath])
+    except Exception as e:
+        print(f"Error opening file: {e}")
+
 
 template_dir = resource_path('templates')
 static_dir = resource_path('static') # optional if used later
@@ -178,44 +198,62 @@ def calc_preview():
 
 @app.route('/export/<type>/<emp_id>')
 def export_report(type, emp_id):
-    emp = database.get_employee(int(emp_id))
-    missions_list = database.get_missions_for_employee(int(emp_id))
+    try:
+        emp = database.get_employee(int(emp_id))
+        missions_list = database.get_missions_for_employee(int(emp_id))
 
-    if not emp or not missions_list:
-        return "لا توجد بيانات أو مهمات لهذا الموظف لتصديرها", 404
+        if not emp or not missions_list:
+            return "لا توجد بيانات أو مهمات لهذا الموظف لتصديرها", 404
 
-    # Recalculate Grand Total for Tafqeet
-    grand_total = sum(m[15] for m in missions_list)
-    tafqeet_text = tafqeet(grand_total)
+        grand_total = sum(m[15] for m in missions_list)
+        tafqeet_text = tafqeet(grand_total)
 
-    if type == "pdf":
-        path = f"report_employee_{emp_id}.pdf"
-        generate_pdf_report(emp, missions_list, path, tafqeet_text, database.get_settings())
-        return send_file(path, as_attachment=True)
-    elif type == "excel":
-        path = f"report_employee_{emp_id}.xlsx"
-        generate_excel_report(emp, missions_list, path, tafqeet_text, database.get_settings())
-        return send_file(path, as_attachment=True)
+        save_dir = get_user_downloads_dir()
+        emp_clean_name = "".join(c for c in emp[1] if c.isalnum() or c in (' ', '_', '-')).strip()
 
-    return "Invalid type", 400
+        if type == "pdf":
+            filename = f"كشف_مهمات_{emp_clean_name}.pdf"
+            output_path = os.path.join(save_dir, filename)
+            generate_pdf_report(emp, missions_list, output_path, tafqeet_text, database.get_settings())
+            open_file_externally(output_path)
+            return redirect(url_for('missions', emp_id=emp_id))
+
+        elif type == "excel":
+            filename = f"كشف_مهمات_{emp_clean_name}.xlsx"
+            output_path = os.path.join(save_dir, filename)
+            generate_excel_report(emp, missions_list, output_path, tafqeet_text, database.get_settings())
+            open_file_externally(output_path)
+            return redirect(url_for('missions', emp_id=emp_id))
+
+        return "Invalid type", 400
+    except Exception as e:
+        print(f"Export error: {e}")
+        return f"حدث خطأ أثناء تصدير الكشف: {e}", 500
 
 
 @app.route('/export_all/excel')
 def export_all_excel():
-    all_employees = database.get_all_employees()
-    employees_data = []
+    try:
+        all_employees = database.get_all_employees()
+        employees_data = []
 
-    for emp in all_employees:
-        emp_id = emp[0]
-        missions = database.get_missions_for_employee(emp_id)
-        if missions:
-            employees_data.append((emp, missions))
+        for emp in all_employees:
+            emp_id = emp[0]
+            missions = database.get_missions_for_employee(emp_id)
+            if missions:
+                employees_data.append((emp, missions))
 
-    if not employees_data:
-        return "لا توجد أي مهام مسجلة للموظفين لتصديرها.", 404
+        if not employees_data:
+            return "لا توجد أي مهام مسجلة للموظفين لتصديرها.", 404
 
-    output_filename = "كشف_المهام_الإجمالي_لكافة_الموظفين.xlsx"
-    from excel_generator import generate_consolidated_excel_report
-    generate_consolidated_excel_report(employees_data, output_filename, settings=database.get_settings())
+        save_dir = get_user_downloads_dir()
+        output_filename = os.path.join(save_dir, "كشف_المهام_الإجمالي_لكافة_الموظفين.xlsx")
 
-    return send_file(output_filename, as_attachment=True)
+        from excel_generator import generate_consolidated_excel_report
+        generate_consolidated_excel_report(employees_data, output_filename, settings=database.get_settings())
+        open_file_externally(output_filename)
+
+        return redirect(url_for('missions'))
+    except Exception as e:
+        print(f"Export all error: {e}")
+        return f"حدث خطأ أثناء تصدير الملف الشامل: {e}", 500

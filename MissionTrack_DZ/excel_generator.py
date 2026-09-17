@@ -161,9 +161,13 @@ def populate_employee_sheet(ws, employee, missions, tafqeet_text, settings=None)
 
 def generate_excel_report(employee, missions, output_path, tafqeet_text, settings=None):
     template_path = resource_path("Template.xlsx")
+    if not os.path.exists(template_path):
+        template_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "Template.xlsx")
+    if not os.path.exists(template_path):
+        template_path = os.path.join(os.getcwd(), "Template.xlsx")
 
     if not os.path.exists(template_path):
-        raise FileNotFoundError(f"ملف القالب الأصلي غير موجود في المسار: {template_path}. يرجى وضع Template.xlsx بجانب البرنامج.")
+        raise FileNotFoundError(f"تعذر العثور على Template.xlsx في المسار: {template_path}")
 
     wb = openpyxl.load_workbook(template_path)
     ws = wb.active
@@ -174,10 +178,15 @@ def generate_excel_report(employee, missions, output_path, tafqeet_text, setting
 
 def generate_consolidated_excel_report(employees_data, output_path, template_path="Template.xlsx", settings=None):
     if not os.path.isabs(template_path):
-        template_path = resource_path(template_path)
+        tp = resource_path(template_path)
+        if not os.path.exists(tp):
+            tp = os.path.join(os.path.dirname(os.path.abspath(__file__)), template_path)
+        if not os.path.exists(tp):
+            tp = os.path.join(os.getcwd(), template_path)
+        template_path = tp
 
     if not os.path.exists(template_path):
-        raise FileNotFoundError(f"ملف القالب الأصلي غير موجود في المسار: {template_path}. يرجى وضع Template.xlsx بجانب البرنامج.")
+        raise FileNotFoundError(f"تعذر العثور على Template.xlsx في المسار: {template_path}")
 
     # Load master workbook using template as base
     wb = openpyxl.load_workbook(template_path)
