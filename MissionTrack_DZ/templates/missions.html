@@ -87,6 +87,9 @@
                     تصدير الكشف الإجمالي لجميع المهام المسجلة أدناه:
                     <a href="{{ url_for('export_report', type='pdf', emp_id=selected_emp_id) }}" class="inline-block bg-red-600 text-white px-4 py-2 rounded text-sm ml-2 hover:bg-red-700">تصدير PDF</a>
                     <a href="{{ url_for('export_report', type='excel', emp_id=selected_emp_id) }}" class="inline-block bg-green-600 text-white px-4 py-2 rounded text-sm hover:bg-green-700">تصدير Excel</a>
+                    <a href="{{ url_for('export_engagement', emp_id=selected_emp_id) }}" class="inline-block bg-teal-600 text-white px-4 py-2 rounded text-sm hover:bg-teal-700 ml-2">
+                        <i class="fas fa-file-invoice-dollar"></i> استخراج بطاقة الالتزام (Word)
+                    </a>
                     <a href="{{ url_for('export_all_excel') }}" class="inline-block bg-indigo-600 text-white px-4 py-2 rounded text-sm ml-2 hover:bg-indigo-700">
                         <i class="fas fa-file-excel"></i> تصدير الكشف الشامل لجميع الموظفين (ملف مجمع)
                     </a>

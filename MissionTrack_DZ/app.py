@@ -8,7 +8,9 @@ import database
 from calculator import calculate_allowances
 from tafqeet import tafqeet
 from pdf_generator import generate_pdf_report
+from pdf_generator import generate_pdf_report
 from excel_generator import generate_excel_report, generate_consolidated_excel_report
+from engagement_generator import generate_engagement_doc
 
 def get_user_downloads_dir():
     home = os.path.expanduser("~")
@@ -39,6 +41,66 @@ def dashboard():
     total_missions, total_spent = database.get_stats()
     return render_template('dashboard.html', m_count=total_missions, m_spent=total_spent)
 
+
+
+@app.route('/export_engagement/<emp_id>')
+def export_engagement(emp_id):
+    try:
+        emp = database.get_employee(int(emp_id))
+        missions_list = database.get_missions_for_employee(int(emp_id))
+        if not emp or not missions_list:
+            return "لا توجد مهمات مسجلة لهذا الموظف لإنشاء بطاقة الالتزام.", 404
+
+        # حساب المبلغ المقترح للكشف الحالي
+        proposed_amt = sum(m[15] for m in missions_list)
+
+        # مجموع الالتزامات السابقة لجميع الموظفين الآخرين
+        summary = database.get_budget_summary()
+        prior_commitments = max(0.0, summary['total_consumed'] - proposed_amt)
+
+        budget_info = database.get_budget_credit_info()
+        save_dir = get_user_downloads_dir()
+
+        emp_clean = "".join(c for c in emp[1] if c.isalnum() or c in (' ', '_', '-')).strip().replace(" ", "_")
+        filename = f"بطاقة_التزام_{emp_clean}.docx".replace(" ", "_")
+        out_path = os.path.join(save_dir, filename)
+
+        generate_engagement_doc(
+            output_path=out_path,
+            employee=emp,
+            proposed_amount=proposed_amt,
+            prior_commitments=prior_commitments,
+            budget_info=budget_info,
+            commitment_num=f"0{emp_id}",
+            commitment_date=missions_list[-1][6] if missions_list[-1][6] else "06-04-2026"
+        )
+        open_file_externally(out_path)
+        return redirect(url_for('missions', emp_id=emp_id))
+    except Exception as e:
+        print(f"Export engagement error: {e}")
+        return f"خطأ أثناء توليد بطاقة الالتزام: {e}", 500
+
+@app.route('/budget', methods=['GET', 'POST'])
+def budget():
+    if request.method == 'POST':
+        data = {
+            'program_code': request.form.get('program_code'),
+            'program_name': request.form.get('program_name'),
+            'subprogram_code': request.form.get('subprogram_code'),
+            'subprogram_name': request.form.get('subprogram_name'),
+            'activity_code': request.form.get('activity_code'),
+            'activity_name': request.form.get('activity_name'),
+            'order_officer_code': request.form.get('order_officer_code'),
+            'class_code': request.form.get('class_code'),
+            'class_name': request.form.get('class_name'),
+            'allocated_budget': request.form.get('allocated_budget')
+        }
+        database.update_budget_credit_info(data)
+        return redirect(url_for('budget'))
+
+    summary = database.get_budget_summary()
+    info = database.get_budget_credit_info()
+    return render_template('budget.html', summary=summary, info=info)
 
 @app.route('/settings', methods=['GET', 'POST'])
 def settings():
@@ -209,7 +271,7 @@ def export_report(type, emp_id):
         tafqeet_text = tafqeet(grand_total)
 
         save_dir = get_user_downloads_dir()
-        emp_clean_name = "".join(c for c in emp[1] if c.isalnum() or c in (' ', '_', '-')).strip()
+        emp_clean_name = "".join(c for c in emp[1] if c.isalnum() or c in (' ', '_', '-')).strip().replace(" ", "_")
 
         if type == "pdf":
             filename = f"كشف_مهمات_{emp_clean_name}.pdf"

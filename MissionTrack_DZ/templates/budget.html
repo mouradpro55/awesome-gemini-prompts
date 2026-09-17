@@ -1,0 +1,57 @@
+{% extends 'base.html' %}
+{% block content %}
+<h2 class="text-3xl font-bold mb-6 text-slate-800">متابعة رصيد الميزانية (الالتزام المالي)</h2>
+
+<div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+    <div class="bg-white p-6 rounded-lg shadow border border-gray-100 text-center">
+        <h3 class="text-xl text-gray-500 mb-2">رخصة الالتزام السنوية</h3>
+        <p class="text-3xl font-bold text-blue-600">{{ "{:,.2f}".format(summary.allocated_budget).replace(',', ' ') }} دج</p>
+    </div>
+    <div class="bg-white p-6 rounded-lg shadow border border-gray-100 text-center">
+        <h3 class="text-xl text-gray-500 mb-2">مجموع الالتزامات المستهلكة</h3>
+        <p class="text-3xl font-bold text-red-600">{{ "{:,.2f}".format(summary.total_consumed).replace(',', ' ') }} دج</p>
+    </div>
+    <div class="bg-white p-6 rounded-lg shadow border border-gray-100 text-center">
+        <h3 class="text-xl text-gray-500 mb-2">الرصيد المالي المتبقي</h3>
+        <p class="text-3xl font-bold text-green-600">{{ "{:,.2f}".format(summary.available_budget).replace(',', ' ') }} دج</p>
+    </div>
+</div>
+
+<div class="bg-white p-6 rounded-lg shadow mb-8">
+    <h3 class="text-xl font-bold mb-4">نسبة استهلاك الميزانية</h3>
+    {% set percentage = 0 %}
+    {% if summary.allocated_budget > 0 %}
+        {% set percentage = (summary.total_consumed / summary.allocated_budget) * 100 %}
+    {% endif %}
+    <div class="w-full bg-gray-200 rounded-full h-4 mb-2">
+      <div class="bg-blue-600 h-4 rounded-full" style="width: {{ percentage|round }}%"></div>
+    </div>
+    <p class="text-sm text-gray-600">{{ percentage|round(1) }}% مستهلك</p>
+    {% if percentage >= 90 %}
+        <p class="text-sm text-red-600 font-bold mt-2">تنبيه: لقد اقتربت من استنفاد الرصيد المالي المخصص!</p>
+    {% endif %}
+</div>
+
+<div class="bg-white p-6 rounded-lg shadow mb-8">
+    <h3 class="text-xl font-bold mb-4">إعدادات البطاقة المالية</h3>
+    <form method="POST" action="{{ url_for('budget') }}" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div><label class="block text-gray-700 text-sm font-bold mb-2">رمز البرنامج</label><input type="text" name="program_code" value="{{ info[2] if info else '' }}" class="w-full border p-2 rounded"></div>
+        <div><label class="block text-gray-700 text-sm font-bold mb-2">تسمية البرنامج</label><input type="text" name="program_name" value="{{ info[3] if info else '' }}" class="w-full border p-2 rounded"></div>
+
+        <div><label class="block text-gray-700 text-sm font-bold mb-2">رمز البرنامج الفرعي</label><input type="text" name="subprogram_code" value="{{ info[4] if info else '' }}" class="w-full border p-2 rounded"></div>
+        <div><label class="block text-gray-700 text-sm font-bold mb-2">تسمية البرنامج الفرعي</label><input type="text" name="subprogram_name" value="{{ info[5] if info else '' }}" class="w-full border p-2 rounded"></div>
+
+        <div><label class="block text-gray-700 text-sm font-bold mb-2">رمز النشاط</label><input type="text" name="activity_code" value="{{ info[6] if info else '' }}" class="w-full border p-2 rounded"></div>
+        <div><label class="block text-gray-700 text-sm font-bold mb-2">تسمية النشاط</label><input type="text" name="activity_name" value="{{ info[7] if info else '' }}" class="w-full border p-2 rounded"></div>
+
+        <div><label class="block text-gray-700 text-sm font-bold mb-2">رمز الآمر بالصرف</label><input type="text" name="order_officer_code" value="{{ info[8] if info else '' }}" class="w-full border p-2 rounded"></div>
+        <div><label class="block text-gray-700 text-sm font-bold mb-2">الاعتماد السنوي (رخصة الالتزام)</label><input type="number" step="0.01" name="allocated_budget" value="{{ info[14] if info else '600000' }}" class="w-full border p-2 rounded bg-yellow-50"></div>
+
+        <div class="col-span-1 md:col-span-2 text-center mt-4 border-t pt-4">
+            <button type="submit" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-12 rounded">
+                تحديث بيانات الميزانية
+            </button>
+        </div>
+    </form>
+</div>
+{% endblock %}
