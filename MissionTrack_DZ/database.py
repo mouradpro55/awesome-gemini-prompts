@@ -151,6 +151,21 @@ def add_mission(emp_id, data):
     conn.commit()
     conn.close()
 
+def update_mission(mission_id, data):
+    conn = get_connection()
+    cursor = conn.cursor()
+    cursor.execute('''
+        UPDATE missions
+        SET budget_chapter=?, budget_article=?, report_month_year=?, order_number=?, order_date=?, purpose=?, itinerary=?, transport_mode=?, departure_datetime=?, return_datetime=?, region=?, meals_count=?, nights_count=?, total_amount=?, amount_text=?, mission_type=?
+        WHERE id=?
+    ''', (data.get('budget_chapter'), data.get('budget_article'), data.get('report_month_year'),
+          data.get('order_number'), data.get('order_date'), data.get('purpose'), data.get('itinerary'),
+          data.get('transport_mode'), data.get('departure_datetime'), data.get('return_datetime'),
+          data.get('region'), data.get('meals_count'), data.get('nights_count'),
+          data.get('total_amount'), data.get('amount_text'), data.get('mission_type', 'عادية'), mission_id))
+    conn.commit()
+    conn.close()
+
 def delete_mission(mission_id):
     conn = get_connection()
     cursor = conn.cursor()

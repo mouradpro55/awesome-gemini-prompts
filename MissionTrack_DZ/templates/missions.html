@@ -21,8 +21,9 @@
 <div class="bg-white p-6 rounded-lg shadow mb-8">
     <h3 class="text-xl font-bold mb-4">إضافة مهمة جديدة</h3>
     <form method="POST" action="{{ url_for('missions') }}" class="grid grid-cols-1 md:grid-cols-3 gap-4" id="missionForm">
-        <input type="hidden" name="action" value="add">
+                <input type="hidden" name="action" id="form_action" value="add">
         <input type="hidden" name="emp_id" value="{{ selected_emp_id }}">
+        <input type="hidden" name="mission_id" id="form_mission_id" value="">
 
         <div><label class="block text-gray-700 text-sm font-bold mb-2">رقم الأمر بمهمة</label><input type="text" name="order_number" class="w-full border p-2 rounded"></div>
         <div><label class="block text-gray-700 text-sm font-bold mb-2">تاريخ الأمر</label><input type="text" name="order_date" placeholder="15-05-2026" class="w-full border p-2 rounded"></div>
@@ -70,7 +71,7 @@
         <div class="col-span-1 md:col-span-3 bg-blue-50 p-4 rounded text-blue-900 hidden" id="calcResult"></div>
 
         <div class="col-span-1 md:col-span-3 text-center mt-4 border-t pt-4">
-            <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-12 rounded">
+            <button type="submit" id="submit_btn" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-12 rounded">
                 حفظ المهمة في السجل
             </button>
         </div>
@@ -111,12 +112,15 @@
                     {{ m[15] }} دج<br><span class="text-xs text-gray-500">{{ m[13] }} وجبة, {{ m[14] }} ليلة</span>
                 </td>
                 <td class="px-5 py-5 border-b text-sm text-center">
-                    <form method="POST" action="{{ url_for('missions') }}" onsubmit="return confirm('تأكيد الحذف؟');">
-                        <input type="hidden" name="action" value="delete">
-                        <input type="hidden" name="emp_id" value="{{ selected_emp_id }}">
-                        <input type="hidden" name="mission_id" value="{{ m[0] }}">
-                        <button type="submit" class="text-red-600 hover:text-red-900 font-bold">حذف</button>
-                    </form>
+                    <div class="flex flex-col gap-2">
+                        <button type="button" onclick='editMission({{ m|tojson }})' class="text-blue-600 hover:text-blue-900 font-bold">تعديل</button>
+                        <form method="POST" action="{{ url_for('missions') }}" onsubmit="return confirm('تأكيد الحذف؟');">
+                            <input type="hidden" name="action" value="delete">
+                            <input type="hidden" name="emp_id" value="{{ selected_emp_id }}">
+                            <input type="hidden" name="mission_id" value="{{ m[0] }}">
+                            <button type="submit" class="text-red-600 hover:text-red-900 font-bold">حذف</button>
+                        </form>
+                    </div>
                 </td>
             </tr>
             {% endfor %}
@@ -158,6 +162,40 @@ function calculate() {
     })
     .catch(err => alert('خطأ في صيغة التاريخ. يجب أن تكون DD-MM-YYYY HH:MM'));
 }
+
+function editMission(m) {
+    document.getElementById('form_action').value = 'edit';
+    document.getElementById('form_mission_id').value = m[0];
+
+    document.querySelector('input[name="order_number"]').value = m[5];
+    document.querySelector('input[name="order_date"]').value = m[6];
+    document.querySelector('input[name="purpose"]').value = m[7];
+    document.querySelector('input[name="itinerary"]').value = m[8];
+    document.querySelector('input[name="transport_mode"]').value = m[9];
+
+    document.getElementById('region').value = m[12];
+
+    document.querySelector('input[name="budget_chapter"]').value = m[2];
+    document.querySelector('input[name="budget_article"]').value = m[3];
+    document.querySelector('input[name="report_month_year"]').value = m[4];
+
+    document.getElementById('dep').value = m[10];
+    document.getElementById('ret').value = m[11];
+
+    // mission_type is at index 18 based on our DB schema updates
+    if (m.length > 18 && m[18]) {
+        document.getElementById('mission_type').value = m[18];
+    } else {
+        document.getElementById('mission_type').value = 'عادية';
+    }
+
+    document.getElementById('submit_btn').innerHTML = 'تحديث بيانات المهمة';
+    document.getElementById('submit_btn').classList.replace('bg-blue-600', 'bg-orange-600');
+    document.getElementById('submit_btn').classList.replace('hover:bg-blue-700', 'hover:bg-orange-700');
+
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
 </script>
 {% endif %}
 {% endblock %}

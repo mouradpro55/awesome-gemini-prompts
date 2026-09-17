@@ -119,6 +119,38 @@ def missions():
             if selected_emp_id:
                 database.add_mission(int(selected_emp_id), data)
 
+
+        elif action == 'edit':
+            mis_id = request.form.get('mission_id')
+            dep = request.form.get('departure_datetime')
+            ret = request.form.get('return_datetime')
+            reg = request.form.get('region')
+
+            is_training = (request.form.get('mission_type') == 'تكوين')
+            m_count, n_count, gross, tot = calculate_allowances(dep, ret, reg, is_training=is_training)
+            t_txt = tafqeet(tot)
+
+            data = {
+                'budget_chapter': request.form.get('budget_chapter'),
+                'budget_article': request.form.get('budget_article'),
+                'report_month_year': request.form.get('report_month_year'),
+                'order_number': request.form.get('order_number'),
+                'order_date': request.form.get('order_date'),
+                'purpose': request.form.get('purpose'),
+                'itinerary': request.form.get('itinerary'),
+                'transport_mode': request.form.get('transport_mode'),
+                'departure_datetime': dep,
+                'return_datetime': ret,
+                'region': reg,
+                'meals_count': m_count,
+                'nights_count': n_count,
+                'total_amount': tot,
+                'amount_text': t_txt,
+                'mission_type': request.form.get('mission_type', 'عادية')
+            }
+            if mis_id:
+                database.update_mission(int(mis_id), data)
+
         return redirect(url_for('missions', emp_id=selected_emp_id))
 
     missions_list = database.get_missions_for_employee(selected_emp_id) if selected_emp_id else []
