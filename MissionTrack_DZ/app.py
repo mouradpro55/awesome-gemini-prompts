@@ -16,6 +16,24 @@ def dashboard():
     total_missions, total_spent = database.get_stats()
     return render_template('dashboard.html', m_count=total_missions, m_spent=total_spent)
 
+
+@app.route('/settings', methods=['GET', 'POST'])
+def settings():
+    if request.method == 'POST':
+        data = {
+            'republic_title': request.form.get('republic_title'),
+            'ministry_name': request.form.get('ministry_name'),
+            'state_name': request.form.get('state_name'),
+            'institution_name': request.form.get('institution_name'),
+            'default_chapter': request.form.get('default_chapter'),
+            'default_article': request.form.get('default_article')
+        }
+        database.update_settings(data)
+        return redirect(url_for('settings'))
+
+    curr_settings = database.get_settings()
+    return render_template('settings.html', settings=curr_settings)
+
 @app.route('/employees', methods=['GET', 'POST'])
 def employees():
     if request.method == 'POST':
@@ -76,7 +94,8 @@ def missions():
             ret = request.form.get('return_datetime')
             reg = request.form.get('region')
 
-            m_count, n_count, tot = calculate_allowances(dep, ret, reg)
+            is_training = (request.form.get('mission_type') == 'تكوين')
+            m_count, n_count, gross, tot = calculate_allowances(dep, ret, reg, is_training=is_training)
             t_txt = tafqeet(tot)
 
             data = {
@@ -94,7 +113,8 @@ def missions():
                 'meals_count': m_count,
                 'nights_count': n_count,
                 'total_amount': tot,
-                'amount_text': t_txt
+                'amount_text': t_txt,
+                'mission_type': request.form.get('mission_type', 'عادية')
             }
             if selected_emp_id:
                 database.add_mission(int(selected_emp_id), data)
@@ -107,9 +127,19 @@ def missions():
 @app.route('/calc_preview', methods=['POST'])
 def calc_preview():
     data = request.json
-    m_count, n_count, tot = calculate_allowances(data.get('dep'), data.get('ret'), data.get('reg'))
-    t_txt = tafqeet(tot)
-    return jsonify({'meals': m_count, 'nights': n_count, 'total': tot, 'text': t_txt})
+    is_training = (data.get('mission_type') == 'تكوين')
+    m_count, n_count, gross, net = calculate_allowances(
+        data.get('dep'), data.get('ret'), data.get('reg'), is_training=is_training
+    )
+    t_txt = tafqeet(net)
+    return jsonify({
+        'meals': m_count,
+        'nights': n_count,
+        'gross': gross,
+        'total': net,
+        'text': t_txt,
+        'is_training': is_training
+    })
 
 @app.route('/export/<type>/<emp_id>')
 def export_report(type, emp_id):
@@ -125,11 +155,11 @@ def export_report(type, emp_id):
 
     if type == "pdf":
         path = f"report_employee_{emp_id}.pdf"
-        generate_pdf_report(emp, missions_list, path, tafqeet_text)
+        generate_pdf_report(emp, missions_list, path, tafqeet_text, database.get_settings())
         return send_file(path, as_attachment=True)
     elif type == "excel":
         path = f"report_employee_{emp_id}.xlsx"
-        generate_excel_report(emp, missions_list, path, tafqeet_text)
+        generate_excel_report(emp, missions_list, path, tafqeet_text, database.get_settings())
         return send_file(path, as_attachment=True)
 
     return "Invalid type", 400
@@ -151,7 +181,7 @@ def export_all_excel():
 
     output_filename = "كشف_المهام_الإجمالي_لكافة_الموظفين.xlsx"
     from excel_generator import generate_consolidated_excel_report
-    generate_consolidated_excel_report(employees_data, output_filename)
+    generate_consolidated_excel_report(employees_data, output_filename, settings=database.get_settings())
 
     return send_file(output_filename, as_attachment=True)
 

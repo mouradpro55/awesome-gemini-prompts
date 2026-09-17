@@ -30,6 +30,15 @@
 
         <div><label class="block text-gray-700 text-sm font-bold mb-2">المسار</label><input type="text" name="itinerary" class="w-full border p-2 rounded"></div>
         <div><label class="block text-gray-700 text-sm font-bold mb-2">وسيلة النقل</label><input type="text" name="transport_mode" class="w-full border p-2 rounded"></div>
+
+        <div>
+            <label class="block text-gray-700 text-sm font-bold mb-2">نوع المهمة:</label>
+            <select name="mission_type" id="mission_type" class="w-full border p-2 rounded bg-white" onchange="calculate()">
+                <option value="عادية">مهمة عادية (استحقاق 100%)</option>
+                <option value="تكوين">مهمة من أجل تكوين (استحقاق 25%)</option>
+            </select>
+        </div>
+
         <div>
             <label class="block text-gray-700 text-sm font-bold mb-2">المنطقة</label>
             <select name="region" id="region" class="w-full border p-2 rounded bg-white">
@@ -126,17 +135,25 @@ function calculate() {
 
     if(!dep || !ret) { alert("أدخل تواريخ الذهاب والإياب أولاً"); return; }
 
+    const m_type = document.getElementById('mission_type') ? document.getElementById('mission_type').value : 'عادية';
+
     fetch('/calc_preview', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ dep: dep, ret: ret, reg: reg })
+        body: JSON.stringify({ dep: dep, ret: ret, reg: reg, mission_type: m_type })
     })
     .then(res => res.json())
     .then(data => {
         const div = document.getElementById('calcResult');
-        div.innerHTML = `<strong>نتيجة الحساب:</strong> ${data.meals} وجبة، ${data.nights} ليلة <br>
-                         <strong>المبلغ:</strong> ${data.total} دج <br>
-                         <strong>بالحروف:</strong> ${data.text}`;
+        let resHTML = `<strong>نتيجة الحساب:</strong> ${data.meals} وجبة، ${data.nights} ليلة <br>`;
+        if (data.is_training) {
+            resHTML += `<strong>المبلغ الخام:</strong> ${data.gross} دج <br>
+                        <strong class="text-green-700">المبلغ الصافي (25%):</strong> ${data.total} دج <br>`;
+        } else {
+            resHTML += `<strong>المبلغ المستحق:</strong> ${data.total} دج <br>`;
+        }
+        resHTML += `<strong>بالحروف:</strong> ${data.text}`;
+        div.innerHTML = resHTML;
         div.classList.remove('hidden');
     })
     .catch(err => alert('خطأ في صيغة التاريخ. يجب أن تكون DD-MM-YYYY HH:MM'));

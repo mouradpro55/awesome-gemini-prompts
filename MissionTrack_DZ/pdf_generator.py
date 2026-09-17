@@ -1,150 +1,158 @@
+import os
 from reportlab.lib.pagesizes import A4, landscape
-from reportlab.pdfgen import canvas
+from reportlab.lib import colors
+from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle
+from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 from reportlab.pdfbase import pdfmetrics
 from reportlab.pdfbase.ttfonts import TTFont
-from reportlab.lib import colors
 import arabic_reshaper
 from bidi.algorithm import get_display
-import os
 
-def render_arabic(text):
-    if not text: return ""
-    reshaped_text = arabic_reshaper.reshape(str(text))
-    return get_display(reshaped_text)
+def ar(text):
+    if text is None or text == "":
+        return ""
+    reshaped = arabic_reshaper.reshape(str(text))
+    return get_display(reshaped)
 
-def generate_pdf_report(employee, missions, output_path, tafqeet_text):
-    font_path = "Amiri.ttf"
+def generate_pdf_report(employee, missions, output_path, tafqeet_text, settings=None):
+    font_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "Amiri.ttf")
     if os.path.exists(font_path):
-        pdfmetrics.registerFont(TTFont('Amiri', font_path))
-        font_name = 'Amiri'
+        pdfmetrics.registerFont(TTFont('AmiriFont', font_path))
+        font_name = 'AmiriFont'
     else:
         font_name = 'Helvetica'
 
-    # Switch to Landscape A4 for wide table
-    c = canvas.Canvas(output_path, pagesize=landscape(A4))
-    width, height = landscape(A4)
+    rep_title = settings[1] if settings else "الجمهورية الجزائرية الديمقراطية الشعبية"
+    state_title = settings[3] if settings else "ولايـــــــــــــــــة المنيعــــــــــــــــــــــة"
+    inst_title = settings[4] if settings else "مديرية المواصلات السلكية واللاسلكية الوطنية"
 
-    # Margins and layout
-    margin = 30
-    grid_start_x = width - margin - 450 # Right side for Mission Grid (450px wide)
-    admin_start_x = width - margin      # Extreme right for Admin block (but draws leftwards)
+    doc = SimpleDocTemplate(
+        output_path,
+        pagesize=landscape(A4),
+        rightMargin=25,
+        leftMargin=25,
+        topMargin=20,
+        bottomMargin=20
+    )
 
-    # --- Left Block (Admin & Finance) ---
-    c.setFont(font_name, 12)
-    start_y = height - 40
+    styles = getSampleStyleSheet()
+    title_style = ParagraphStyle('Title', fontName=font_name, fontSize=11, leading=14, alignment=1)
+    header_style = ParagraphStyle('Header', fontName=font_name, fontSize=13, leading=16, alignment=1)
+    cell_style = ParagraphStyle('Cell', fontName=font_name, fontSize=9, leading=11, alignment=1)
+    cell_bold = ParagraphStyle('CellB', fontName=font_name, fontSize=9, leading=11, alignment=1)
 
-    c.drawRightString(admin_start_x, start_y, render_arabic("الجمهورية الجزائرية الديمقراطية الشعبية"))
-    start_y -= 20
-    c.drawRightString(admin_start_x, start_y, render_arabic("ولايـــــــــــــــــة المنيعــــــــــــــــــــــة"))
-    start_y -= 20
-    c.drawRightString(admin_start_x, start_y, render_arabic("مديرية المواصلات السلكية واللاسلكية الوطنية لولاية المنيعة"))
+    elements = []
 
-    start_y -= 30
-    c.setFont(font_name, 14)
-    c.drawRightString(admin_start_x - 50, start_y, render_arabic("كشف مصاريف التنقل"))
+    # 1. الترويسة وبيانات الموظف والمؤسسة
+    header_data = [
+        [
+            Paragraph(f"<b>{ar(rep_title)}</b><br/>{ar(state_title)}<br/>{ar(inst_title)}", title_style),
+            Paragraph(f"<b><font size=14>{ar('كشف مصاريف التنقل')}</font></b><br/>{ar('لشهر: ' + (missions[0][4] if missions else ''))}", header_style),
+            Paragraph(
+                f"<b>{ar('السيد:')}</b> {ar(employee[1])} &nbsp;&nbsp; <b>{ar('الرتبة:')}</b> {ar(employee[2])}<br/>"
+                f"<b>{ar('الرقم الاستدلالي:')}</b> {employee[4]} &nbsp;&nbsp; <b>{ar('الصنف:')}</b> {employee[5]}<br/>"
+                f"<b>{ar('الحساب:')}</b> {employee[8]} ({ar(employee[7])})",
+                title_style
+            )
+        ]
+    ]
+    t_header = Table(header_data, colWidths=[240, 220, 300])
+    t_header.setStyle(TableStyle([
+        ('VALIGN', (0,0), (-1,-1), 'MIDDLE'),
+        ('BOTTOMPADDING', (0,0), (-1,-1), 4),
+    ]))
+    elements.append(t_header)
+    elements.append(Spacer(1, 10))
 
-    # Employee Details
-    c.setFont(font_name, 11)
-    start_y -= 40
-    c.drawRightString(admin_start_x, start_y, render_arabic(f"السيـــــــــــــد : {employee[1]}"))
-    start_y -= 20
-    c.drawRightString(admin_start_x, start_y, render_arabic(f"الـرتـبــــــــــــة : {employee[2]}"))
-    start_y -= 20
-    c.drawRightString(admin_start_x, start_y, render_arabic(f"الرقم الاستدلالي : {employee[4]}"))
-    start_y -= 20
-    c.drawRightString(admin_start_x, start_y, render_arabic(f"المقـــر الإداري : {employee[6]}"))
-    start_y -= 20
-    c.drawRightString(admin_start_x, start_y, render_arabic(f"رقم الحساب : {employee[8]}"))
+    # 2. جدول المأموريات
+    cols = [ar('المبلغ'), ar('النوع'), ar('ليالي'), ar('وجبات'), ar('وسيلة النقل'), ar('تاريخ وساعة الإياب'), ar('تاريخ وساعة الذهاب'), ar('المسار'), ar('سبب التنقل'), ar('أمر بمهمة')]
+    table_rows = [cols]
 
-    # --- Right Block (Missions Grid) ---
-    # Draw Table Headers
-    table_y = height - 50
-    c.setFont(font_name, 10)
+    total_meals_n = total_nights_n = 0
+    total_meals_s = total_nights_s = 0
+    grand_total = 0
 
-    col_w = [60, 100, 60, 50, 60, 30, 30, 30, 30]
-    headers = ["سبب التنقل", "المراحل", "تاريخ", "ساعة", "وسيلة النقل", "وجبة(ش)", "نوم(ش)", "وجبة(ج)", "نوم(ج)"]
+    for m in missions:
+        is_training = (len(m) > 18 and m[18] == 'تكوين') or ('تكوين' in str(m[7]))
+        m_type_txt = ar("تكوين (25%)") if is_training else ar("عادية")
 
-    cur_x = grid_start_x
-    for i, h in enumerate(headers):
-        c.rect(cur_x, table_y, col_w[i], 30)
-        c.drawCentredString(cur_x + (col_w[i]/2), table_y + 10, render_arabic(h))
-        cur_x += col_w[i]
+        reg = m[12]
+        meals = m[13] or 0
+        nights = m[14] or 0
+        amt = m[15] or 0
+        grand_total += amt
 
-    # Draw Mission Rows
-    table_y -= 20
+        if reg == "جنوب":
+            total_meals_s += meals
+            total_nights_s += nights
+        else:
+            total_meals_n += meals
+            total_nights_n += nights
 
-    total_n_m = total_n_n = total_s_m = total_s_n = 0
+        order_info = f"{m[5]}<br/>{m[6]}"
+        table_rows.append([
+            f"{amt:,.2f}",
+            m_type_txt,
+            str(nights),
+            str(meals),
+            ar(m[9]),
+            m[11],
+            m[10],
+            ar(m[8]),
+            ar(m[7]),
+            order_info
+        ])
 
-    for m in missions[:10]: # Max 10 missions
-        try:
-            d_date, d_time = m[10].split(' ')[0], m[10].split(' ')[1]
-            r_date, r_time = m[11].split(' ')[0], m[11].split(' ')[1]
-        except:
-            d_date = d_time = r_date = r_time = ""
+    table_rows.append([
+        f"<b>{grand_total:,.2f}</b>",
+        "",
+        str(total_nights_n + total_nights_s),
+        str(total_meals_n + total_meals_s),
+        "", "", "", "",
+        f"<b>{ar('المجموع الإجمالي')}</b>",
+        ""
+    ])
 
-        n_meals = m[13] if m[12] == "شمال" else 0
-        n_nights = m[14] if m[12] == "شمال" else 0
-        s_meals = m[13] if m[12] == "جنوب" else 0
-        s_nights = m[14] if m[12] == "جنوب" else 0
+    formatted_rows = []
+    for r_idx, row in enumerate(table_rows):
+        formatted_row = []
+        for c_idx, cell in enumerate(row):
+            st = cell_bold if (r_idx == 0 or r_idx == len(table_rows)-1) else cell_style
+            formatted_row.append(Paragraph(str(cell), st))
+        formatted_rows.append(formatted_row)
 
-        total_n_m += n_meals
-        total_n_n += n_nights
-        total_s_m += s_meals
-        total_s_n += s_nights
+    col_widths = [75, 75, 40, 40, 75, 95, 95, 115, 110, 70]
+    m_table = Table(formatted_rows, colWidths=col_widths, repeatRows=1)
+    m_table.setStyle(TableStyle([
+        ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor("#f1f5f9")),
+        ('GRID', (0, 0), (-1, -1), 0.5, colors.HexColor("#94a3b8")),
+        ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
+        ('TOPPADDING', (0, 0), (-1, -1), 3),
+        ('BOTTOMPADDING', (0, 0), (-1, -1), 3),
+        ('BACKGROUND', (0, -1), (-1, -1), colors.HexColor("#f8fafc")),
+    ]))
+    elements.append(m_table)
+    elements.append(Spacer(1, 10))
 
-        # Departure Row
-        cur_x = grid_start_x
-        row_data_dep = [m[7], m[8], d_date, d_time, m[9], str(n_meals or ""), str(n_nights or ""), str(s_meals or ""), str(s_nights or "")]
-        for i, val in enumerate(row_data_dep):
-            c.rect(cur_x, table_y, col_w[i], 20)
-            c.drawCentredString(cur_x + (col_w[i]/2), table_y + 6, render_arabic(val))
-            cur_x += col_w[i]
+    # 3. التفقيط والتوقيعات
+    fin_text = (
+        f"<b>{ar('أوقف هذا الكشف عند مبلغ قدره:')}</b> {ar(tafqeet_text)}.<br/>"
+        f"<b>{ar('تفاصيل التعويض:')}</b> {ar('شمال')} ({total_meals_n} {ar('وجبة')} / {total_nights_n} {ar('ليلة')}) &nbsp;|&nbsp; "
+        f"{ar('جنوب')} ({total_meals_s} {ar('وجبة')} / {total_nights_s} {ar('ليلة')})"
+    )
 
-        table_y -= 20
+    footer_data = [
+        [Paragraph(fin_text, title_style)],
+        [
+            Paragraph(f"<br/><br/><b>{ar('إمضاء المعني')}</b>", title_style),
+            Paragraph(f"<br/><br/><b>{ar('تأشيرة رئيس المصلحة')}</b>", title_style),
+            Paragraph(f"<br/><br/><b>{ar('تأشيرة الآمر بالصرف')}</b>", title_style)
+        ]
+    ]
+    t_footer = Table(footer_data, colWidths=[790])
+    t_footer.setStyle(TableStyle([
+        ('VALIGN', (0,0), (-1,-1), 'TOP'),
+    ]))
+    elements.append(t_footer)
 
-        # Return Row
-        cur_x = grid_start_x
-        row_data_ret = ["", "", r_date, r_time, "", "", "", "", ""]
-        for i, val in enumerate(row_data_ret):
-            c.rect(cur_x, table_y, col_w[i], 20)
-            c.drawCentredString(cur_x + (col_w[i]/2), table_y + 6, render_arabic(val))
-            cur_x += col_w[i]
-
-        table_y -= 20
-
-    # Draw Totals Row
-    cur_x = grid_start_x + sum(col_w[:5])
-    c.rect(grid_start_x, table_y, sum(col_w[:5]), 20)
-    c.drawCentredString(grid_start_x + sum(col_w[:5])/2, table_y + 6, render_arabic("المجموع"))
-
-    totals = [str(total_n_m), str(total_n_n), str(total_s_m), str(total_s_n)]
-    for i, val in enumerate(totals):
-        c.rect(cur_x, table_y, col_w[5+i], 20)
-        c.drawCentredString(cur_x + (col_w[5+i]/2), table_y + 6, render_arabic(val))
-        cur_x += col_w[5+i]
-
-    # --- Financial Calculation Box (Bottom Left) ---
-    c.setFont(font_name, 11)
-    fin_y = start_y - 40
-    c.drawRightString(admin_start_x, fin_y, render_arabic("التعويضات اليومية:"))
-
-    grand_total = (total_n_m * 800) + (total_n_n * 3200) + (total_s_m * 1000) + (total_s_n * 4000)
-
-    fin_y -= 20
-    c.drawRightString(admin_start_x, fin_y, render_arabic(f"الشمال: أكل ({total_n_m}) = {total_n_m * 800} دج | نوم ({total_n_n}) = {total_n_n * 3200} دج"))
-    fin_y -= 20
-    c.drawRightString(admin_start_x, fin_y, render_arabic(f"الجنوب: أكل ({total_s_m}) = {total_s_m * 1000} دج | نوم ({total_s_n}) = {total_s_n * 4000} دج"))
-
-    fin_y -= 30
-    c.setFont(font_name, 12)
-    c.drawRightString(admin_start_x, fin_y, render_arabic(f"المجموع العام: {grand_total} دج"))
-    fin_y -= 25
-    c.drawRightString(admin_start_x, fin_y, render_arabic(f"أوقِف هذا الكشف عند مبلغ قدره: {tafqeet_text}"))
-
-    # Signatures
-    fin_y -= 50
-    c.drawRightString(admin_start_x, fin_y, render_arabic("امضــاء المعنـي"))
-    c.drawString(admin_start_x - 300, fin_y, render_arabic("تأشيرة السيد المدير الآمر بالصرف"))
-
-    c.showPage()
-    c.save()
+    doc.build(elements)

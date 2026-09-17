@@ -17,7 +17,7 @@ def sanitize_sheet_title(title, existing_titles):
     existing_titles.add(unique_title)
     return unique_title
 
-def populate_employee_sheet(ws, employee, missions, tafqeet_text):
+def populate_employee_sheet(ws, employee, missions, tafqeet_text, settings=None):
     def safe_write(coord_str, val):
         coord = openpyxl.utils.coordinate_to_tuple(coord_str)
         for merged_range in ws.merged_cells.ranges:
@@ -29,6 +29,12 @@ def populate_employee_sheet(ws, employee, missions, tafqeet_text):
         cell = ws[coord_str]
         cell.value = val
         return cell
+
+
+    # 0. Fill Settings
+    if settings:
+        safe_write("B5", settings[3] if len(settings) > 3 else "") # State
+        safe_write("B6", settings[4] if len(settings) > 4 else "") # Institution
 
     safe_write("C11", employee[1])
 
@@ -53,11 +59,19 @@ def populate_employee_sheet(ws, employee, missions, tafqeet_text):
     total_s_meals = 0
     total_s_nights = 0
 
+    total_n_meals_amt = 0
+    total_n_nights_amt = 0
+    total_s_meals_amt = 0
+    total_s_nights_amt = 0
+
     # 2. Fill Missions (Row 9 to 28, max 10 missions since 2 rows per mission)
     start_row = 9
     for idx, m in enumerate(missions[:10]):
         row_dep = start_row + (idx * 2)
         row_ret = row_dep + 1
+
+        is_training = (len(m) > 18 and m[18] == 'تكوين') or ('تكوين' in str(m[7]))
+        multiplier = 0.25 if is_training else 1.0
 
         # Determine regions
         n_meals, n_nights, s_meals, s_nights = 0, 0, 0, 0
@@ -66,11 +80,15 @@ def populate_employee_sheet(ws, employee, missions, tafqeet_text):
             n_nights = m[14]
             total_n_meals += n_meals
             total_n_nights += n_nights
+            total_n_meals_amt += (n_meals * 800 * multiplier)
+            total_n_nights_amt += (n_nights * 3200 * multiplier)
         else:
             s_meals = m[13]
             s_nights = m[14]
             total_s_meals += s_meals
             total_s_nights += s_nights
+            total_s_meals_amt += (s_meals * 1000 * multiplier)
+            total_s_nights_amt += (s_nights * 4000 * multiplier)
 
         # Parse Departure and Return datetime strings (expected: "DD-MM-YYYY HH:MM")
         try:
@@ -85,7 +103,9 @@ def populate_employee_sheet(ws, employee, missions, tafqeet_text):
             dep_date, dep_time, ret_date, ret_time = "", "", "", ""
 
         # Departure Row (row_dep)
-        safe_write(f"I{row_dep}", m[7]) # Purpose
+        is_training = (len(m) > 18 and m[18] == 'تكوين') or ('تكوين' in str(m[7]))
+        purpose_val = f"{m[7]} (تكوين 25%)" if is_training else m[7]
+        safe_write(f"I{row_dep}", purpose_val) # Purpose
 
         safe_write(f"J{row_dep}", m[8]) # Itinerary
 
@@ -114,17 +134,18 @@ def populate_employee_sheet(ws, employee, missions, tafqeet_text):
     safe_write("P29", total_s_meals if total_s_meals > 0 else "")
     safe_write("Q29", total_s_nights if total_s_nights > 0 else "")
 
+
     safe_write("D19", total_n_meals if total_n_meals > 0 else "")
     safe_write("D20", total_n_nights if total_n_nights > 0 else "")
     safe_write("D22", total_s_meals if total_s_meals > 0 else "")
     safe_write("D23", total_s_nights if total_s_nights > 0 else "")
 
-    safe_write("G19", (total_n_meals * 800) if total_n_meals > 0 else "")
-    safe_write("G20", (total_n_nights * 3200) if total_n_nights > 0 else "")
-    safe_write("G22", (total_s_meals * 1000) if total_s_meals > 0 else "")
-    safe_write("G23", (total_s_nights * 4000) if total_s_nights > 0 else "")
+    safe_write("G19", total_n_meals_amt if total_n_meals_amt > 0 else "")
+    safe_write("G20", total_n_nights_amt if total_n_nights_amt > 0 else "")
+    safe_write("G22", total_s_meals_amt if total_s_meals_amt > 0 else "")
+    safe_write("G23", total_s_nights_amt if total_s_nights_amt > 0 else "")
 
-    grand_total = (total_n_meals * 800) + (total_n_nights * 3200) + (total_s_meals * 1000) + (total_s_nights * 4000)
+    grand_total = total_n_meals_amt + total_n_nights_amt + total_s_meals_amt + total_s_nights_amt
     safe_write("G25", grand_total if grand_total > 0 else "")
 
     # 4. Tafqeet Text
@@ -137,7 +158,7 @@ def populate_employee_sheet(ws, employee, missions, tafqeet_text):
 
 
 
-def generate_excel_report(employee, missions, output_path, tafqeet_text):
+def generate_excel_report(employee, missions, output_path, tafqeet_text, settings=None):
     template_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "Template.xlsx")
 
     if not os.path.exists(template_path):
@@ -146,11 +167,11 @@ def generate_excel_report(employee, missions, output_path, tafqeet_text):
     wb = openpyxl.load_workbook(template_path)
     ws = wb.active
 
-    populate_employee_sheet(ws, employee, missions, tafqeet_text)
+    populate_employee_sheet(ws, employee, missions, tafqeet_text, settings)
 
     wb.save(output_path)
 
-def generate_consolidated_excel_report(employees_data, output_path, template_path="Template.xlsx"):
+def generate_consolidated_excel_report(employees_data, output_path, template_path="Template.xlsx", settings=None):
     if not os.path.isabs(template_path):
         template_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), template_path)
 
@@ -191,7 +212,7 @@ def generate_consolidated_excel_report(employees_data, output_path, template_pat
         emp_tafqeet = tafqeet(emp_total)
 
         # Populate Employee Header & Info Cells (aligned with Template.xlsx)
-        populate_employee_sheet(target_ws, emp, missions, emp_tafqeet)
+        populate_employee_sheet(target_ws, emp, missions, emp_tafqeet, settings)
         generated_sheets.append(target_ws)
 
         # Append to summary sheet

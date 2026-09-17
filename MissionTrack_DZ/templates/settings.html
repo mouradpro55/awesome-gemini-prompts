@@ -1,0 +1,22 @@
+{% extends 'base.html' %}
+{% block content %}
+<h2 class="text-3xl font-bold mb-6 text-slate-800">إعدادات المؤسسة</h2>
+
+<div class="bg-white p-6 rounded-lg shadow mb-8">
+    <form method="POST" action="{{ url_for('settings') }}" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+
+        <div><label class="block text-gray-700 text-sm font-bold mb-2">الجمهورية</label><input type="text" name="republic_title" value="{{ settings[1] if settings else '' }}" class="w-full border p-2 rounded"></div>
+        <div><label class="block text-gray-700 text-sm font-bold mb-2">الوزارة</label><input type="text" name="ministry_name" value="{{ settings[2] if settings else '' }}" class="w-full border p-2 rounded"></div>
+        <div><label class="block text-gray-700 text-sm font-bold mb-2">الولاية</label><input type="text" name="state_name" value="{{ settings[3] if settings else '' }}" class="w-full border p-2 rounded"></div>
+        <div><label class="block text-gray-700 text-sm font-bold mb-2">اسم المؤسسة/المديرية</label><input type="text" name="institution_name" value="{{ settings[4] if settings else '' }}" class="w-full border p-2 rounded"></div>
+        <div><label class="block text-gray-700 text-sm font-bold mb-2">الباب المالي الافتراضي</label><input type="text" name="default_chapter" value="{{ settings[5] if settings else '' }}" class="w-full border p-2 rounded"></div>
+        <div><label class="block text-gray-700 text-sm font-bold mb-2">المادة الميزانياتية الافتراضية</label><input type="text" name="default_article" value="{{ settings[6] if settings else '' }}" class="w-full border p-2 rounded"></div>
+
+        <div class="col-span-1 md:col-span-2 text-center mt-4 border-t pt-4">
+            <button type="submit" class="bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-12 rounded">
+                حفظ الإعدادات
+            </button>
+        </div>
+    </form>
+</div>
+{% endblock %}
