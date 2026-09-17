@@ -1,0 +1,146 @@
+{% extends 'base.html' %}
+{% block content %}
+<h2 class="text-3xl font-bold mb-6 text-slate-800">إدارة المهمات والكشوفات</h2>
+
+<!-- Employee Selector -->
+<div class="bg-white p-6 rounded-lg shadow mb-8">
+    <form method="GET" action="{{ url_for('missions') }}" class="flex items-end gap-4">
+        <div class="flex-1">
+            <label class="block text-gray-700 text-sm font-bold mb-2">اختر الموظف:</label>
+            <select name="emp_id" class="shadow border rounded w-full py-2 px-3 text-gray-700 bg-white" onchange="this.form.submit()">
+                {% for emp in employees %}
+                <option value="{{ emp[0] }}" {% if selected_emp_id == emp[0]|string %}selected{% endif %}>{{ emp[1] }} ({{ emp[4] }})</option>
+                {% endfor %}
+            </select>
+        </div>
+    </form>
+</div>
+
+{% if selected_emp_id %}
+<!-- Add Mission Form -->
+<div class="bg-white p-6 rounded-lg shadow mb-8">
+    <h3 class="text-xl font-bold mb-4">إضافة مهمة جديدة</h3>
+    <form method="POST" action="{{ url_for('missions') }}" class="grid grid-cols-1 md:grid-cols-3 gap-4" id="missionForm">
+        <input type="hidden" name="action" value="add">
+        <input type="hidden" name="emp_id" value="{{ selected_emp_id }}">
+
+        <div><label class="block text-gray-700 text-sm font-bold mb-2">رقم الأمر بمهمة</label><input type="text" name="order_number" class="w-full border p-2 rounded"></div>
+        <div><label class="block text-gray-700 text-sm font-bold mb-2">تاريخ الأمر</label><input type="text" name="order_date" placeholder="15-05-2026" class="w-full border p-2 rounded"></div>
+        <div><label class="block text-gray-700 text-sm font-bold mb-2">سبب التنقل</label><input type="text" name="purpose" class="w-full border p-2 rounded"></div>
+
+        <div><label class="block text-gray-700 text-sm font-bold mb-2">المسار</label><input type="text" name="itinerary" class="w-full border p-2 rounded"></div>
+        <div><label class="block text-gray-700 text-sm font-bold mb-2">وسيلة النقل</label><input type="text" name="transport_mode" class="w-full border p-2 rounded"></div>
+        <div>
+            <label class="block text-gray-700 text-sm font-bold mb-2">المنطقة</label>
+            <select name="region" id="region" class="w-full border p-2 rounded bg-white">
+                <option value="شمال">شمال</option>
+                <option value="جنوب">جنوب</option>
+            </select>
+        </div>
+
+        <div><label class="block text-gray-700 text-sm font-bold mb-2">الباب المالي</label><input type="text" name="budget_chapter" class="w-full border p-2 rounded"></div>
+        <div><label class="block text-gray-700 text-sm font-bold mb-2">المادة</label><input type="text" name="budget_article" class="w-full border p-2 rounded"></div>
+        <div><label class="block text-gray-700 text-sm font-bold mb-2">شهر وسنة الكشف</label><input type="text" name="report_month_year" class="w-full border p-2 rounded"></div>
+
+        <div>
+            <label class="block text-gray-700 text-sm font-bold mb-2">تاريخ الذهاب (DD-MM-YYYY HH:MM)</label>
+            <input type="text" name="departure_datetime" id="dep" required class="w-full border p-2 rounded" placeholder="01-05-2026 08:00">
+        </div>
+        <div>
+            <label class="block text-gray-700 text-sm font-bold mb-2">تاريخ الإياب (DD-MM-YYYY HH:MM)</label>
+            <input type="text" name="return_datetime" id="ret" required class="w-full border p-2 rounded" placeholder="03-05-2026 16:00">
+        </div>
+
+        <div class="flex items-end">
+            <button type="button" onclick="calculate()" class="w-full bg-yellow-500 hover:bg-yellow-600 text-white font-bold py-2 px-4 rounded">
+                معاينة الحساب
+            </button>
+        </div>
+
+        <!-- Preview Result -->
+        <div class="col-span-1 md:col-span-3 bg-blue-50 p-4 rounded text-blue-900 hidden" id="calcResult"></div>
+
+        <div class="col-span-1 md:col-span-3 text-center mt-4 border-t pt-4">
+            <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-12 rounded">
+                حفظ المهمة في السجل
+            </button>
+        </div>
+    </form>
+</div>
+
+<!-- Table -->
+<div class="bg-white rounded-lg shadow overflow-x-auto">
+    <table class="min-w-full leading-normal">
+        <thead>
+            <tr>
+                <th colspan="4" class="px-5 py-3 border-b-2 bg-gray-200 text-right font-bold text-gray-800">
+                    تصدير الكشف الإجمالي لجميع المهام المسجلة أدناه:
+                    <a href="{{ url_for('export_report', type='pdf', emp_id=selected_emp_id) }}" class="inline-block bg-red-600 text-white px-4 py-2 rounded text-sm ml-2 hover:bg-red-700">تصدير PDF</a>
+                    <a href="{{ url_for('export_report', type='excel', emp_id=selected_emp_id) }}" class="inline-block bg-green-600 text-white px-4 py-2 rounded text-sm hover:bg-green-700">تصدير Excel</a>
+                    <a href="{{ url_for('export_all_excel') }}" class="inline-block bg-indigo-600 text-white px-4 py-2 rounded text-sm ml-2 hover:bg-indigo-700">
+                        <i class="fas fa-file-excel"></i> تصدير الكشف الشامل لجميع الموظفين (ملف مجمع)
+                    </a>
+                </th>
+            </tr>
+            <tr>
+                <th class="px-5 py-3 border-b-2 bg-gray-100 text-right text-xs font-semibold text-gray-600">المهمة</th>
+                <th class="px-5 py-3 border-b-2 bg-gray-100 text-right text-xs font-semibold text-gray-600">التواريخ</th>
+                <th class="px-5 py-3 border-b-2 bg-gray-100 text-right text-xs font-semibold text-gray-600">الإجمالي</th>
+                <th class="px-5 py-3 border-b-2 bg-gray-100 text-center text-xs font-semibold text-gray-600">حذف</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for m in missions %}
+            <tr>
+                <td class="px-5 py-5 border-b text-sm">
+                    <strong>{{ m[5] }}</strong><br><span class="text-gray-500">{{ m[7] }}</span>
+                </td>
+                <td class="px-5 py-5 border-b text-sm" dir="ltr" style="text-align: right;">
+                    {{ m[10] }}<br>{{ m[11] }}
+                </td>
+                <td class="px-5 py-5 border-b text-sm font-bold text-green-700">
+                    {{ m[15] }} دج<br><span class="text-xs text-gray-500">{{ m[13] }} وجبة, {{ m[14] }} ليلة</span>
+                </td>
+                <td class="px-5 py-5 border-b text-sm text-center">
+                    <form method="POST" action="{{ url_for('missions') }}" onsubmit="return confirm('تأكيد الحذف؟');">
+                        <input type="hidden" name="action" value="delete">
+                        <input type="hidden" name="emp_id" value="{{ selected_emp_id }}">
+                        <input type="hidden" name="mission_id" value="{{ m[0] }}">
+                        <button type="submit" class="text-red-600 hover:text-red-900 font-bold">حذف</button>
+                    </form>
+                </td>
+            </tr>
+            {% endfor %}
+            {% if not missions %}
+            <tr><td colspan="5" class="p-4 text-center text-gray-500">لا توجد مهمات مسجلة لهذا الموظف.</td></tr>
+            {% endif %}
+        </tbody>
+    </table>
+</div>
+
+<script>
+function calculate() {
+    const dep = document.getElementById('dep').value;
+    const ret = document.getElementById('ret').value;
+    const reg = document.getElementById('region').value;
+
+    if(!dep || !ret) { alert("أدخل تواريخ الذهاب والإياب أولاً"); return; }
+
+    fetch('/calc_preview', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ dep: dep, ret: ret, reg: reg })
+    })
+    .then(res => res.json())
+    .then(data => {
+        const div = document.getElementById('calcResult');
+        div.innerHTML = `<strong>نتيجة الحساب:</strong> ${data.meals} وجبة، ${data.nights} ليلة <br>
+                         <strong>المبلغ:</strong> ${data.total} دج <br>
+                         <strong>بالحروف:</strong> ${data.text}`;
+        div.classList.remove('hidden');
+    })
+    .catch(err => alert('خطأ في صيغة التاريخ. يجب أن تكون DD-MM-YYYY HH:MM'));
+}
+</script>
+{% endif %}
+{% endblock %}

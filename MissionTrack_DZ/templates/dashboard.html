@@ -1,0 +1,14 @@
+{% extends 'base.html' %}
+{% block content %}
+<h2 class="text-3xl font-bold mb-6 text-slate-800">لوحة القيادة</h2>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+    <div class="bg-white p-6 rounded-lg shadow border border-gray-100">
+        <h3 class="text-xl text-gray-500 mb-2">إجمالي المهمات المسجلة</h3>
+        <p class="text-4xl font-bold text-blue-600">{{ m_count }}</p>
+    </div>
+    <div class="bg-white p-6 rounded-lg shadow border border-gray-100">
+        <h3 class="text-xl text-gray-500 mb-2">إجمالي المبالغ المصروفة</h3>
+        <p class="text-4xl font-bold text-green-600">{{ m_spent }} دج</p>
+    </div>
+</div>
+{% endblock %}
