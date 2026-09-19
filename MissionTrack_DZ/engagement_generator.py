@@ -18,6 +18,18 @@ def set_cell_background(cell, fill_color):
     shd.set(qn('w:fill'), fill_color)
     tcPr.append(shd)
 
+def set_cell_borders(cell):
+    tcPr = cell._element.get_or_add_tcPr()
+    tcBorders = OxmlElement('w:tcBorders')
+    for border_name in ['top', 'left', 'bottom', 'right']:
+        b = OxmlElement(f'w:{border_name}')
+        b.set(qn('w:val'), 'single')
+        b.set(qn('w:sz'), '4')
+        b.set(qn('w:space'), '0')
+        b.set(qn('w:color'), '000000')
+        tcBorders.append(b)
+    tcPr.append(tcBorders)
+
 def set_table_borders(table):
     tblPr = table._element.xpath('w:tblPr')
     if tblPr:
@@ -92,21 +104,29 @@ def generate_engagement_doc(output_path, employee, proposed_amount, prior_commit
         r1 = p.add_run(lbl); r1.bold = True; r1.font.name = 'Arial'; r1.font.size = Pt(10)
         r2 = p.add_run(val); r2.bold = True; r2.font.name = 'Arial'; r2.font.size = Pt(10)
 
-    # 2. جداول العناوين (مع تأشير العنوان الثاني بـ X)
+    # 2. جداول العناوين (مع تأشير العنوان الثاني بـ X في مربع منفصل)
     for title_text, mark in [("العنوان الأول : نفقات المستخدمين", ""),
                              ("العنوان الثاني : نفقات تسيير المصالح", "X"),
                              ("العنوان الرابع : نفقات التحويل", "")]:
         t = doc.add_table(rows=1, cols=2)
         t.alignment = WD_TABLE_ALIGNMENT.CENTER
-        set_table_borders(t)
-        t.rows[0].cells[0].width = Inches(5.5)
-        t.rows[0].cells[1].width = Inches(0.8)
+        # لا نضع set_table_borders هنا ليكون الجدول بدون حدود خارجية
 
+        # ضبط مساحة العرض للخلايا
+        t.rows[0].cells[0].width = Inches(5.5)
+        t.rows[0].cells[1].width = Inches(0.3)
+
+        # الخلية الأولى (النص)
         p_t = t.rows[0].cells[0].paragraphs[0]; set_rtl(p_t)
         r_t = p_t.add_run(title_text); r_t.bold = True; r_t.font.name = 'Arial'; r_t.font.size = Pt(10)
 
-        p_m = t.rows[0].cells[1].paragraphs[0]; set_rtl(p_m); p_m.alignment = WD_ALIGN_PARAGRAPH.CENTER
+        # الخلية الثانية (مربع الاختيار Checkbox)
+        cell_m = t.rows[0].cells[1]
+        set_cell_borders(cell_m) # إحاطة المربع فقط بحدود
+
+        p_m = cell_m.paragraphs[0]; set_rtl(p_m); p_m.alignment = WD_ALIGN_PARAGRAPH.CENTER
         r_m = p_m.add_run(mark); r_m.bold = True; r_m.font.name = 'Arial'; r_m.font.size = Pt(11)
+
         doc.add_paragraph().paragraph_format.space_after = Pt(2)
 
     # 3. جدول الالتزام والحساب المالي (Table 3)
