@@ -114,20 +114,30 @@ def generate_engagement_doc(output_path, employee, proposed_amount, prior_commit
     t_fin.alignment = WD_TABLE_ALIGNMENT.CENTER
     set_table_borders(t_fin)
 
+    # دمج ترويسة الجدول وتعيين النصوص
+    cell_0 = t_fin.cell(0, 0)
+    cell_1 = t_fin.cell(0, 1)
+    cell_0.merge(cell_1)
+
     headers = [
-        "الصنف", "تسمية الصنف الفرعي", "رخصة الإلتزام\nالمفتوحة / المعدلة",
+        "الصنف / الصنف الفرعي", "رخصة الإلتزام\nالمفتوحة / المعدلة",
         "مجموع الإلتزامات\nالسابقة", "الرصيد الأولي", "الالتزام المقترح", "الرصيد المتبقي"
     ]
-    for i, h in enumerate(headers):
+
+    col_indices = [0, 2, 3, 4, 5, 6]
+    for i, h in zip(col_indices, headers):
         cell = t_fin.cell(0, i)
         set_cell_background(cell, 'F1F5F9')
         p = cell.paragraphs[0]; set_rtl(p); p.alignment = WD_ALIGN_PARAGRAPH.CENTER
         r = p.add_run(h); r.bold = True; r.font.name = 'Arial'; r.font.size = Pt(8.5)
 
     # صف نفقات التنقلات (21000)
+    account_code = budget_info[10] if budget_info and len(budget_info) > 10 and budget_info[10] else "21000"
+    account_label = budget_info[11] if budget_info and len(budget_info) > 11 and budget_info[11] else "التنقلات و النقل و الاتصالات"
+
     row1_vals = [
-        budget_info[10], # 21000
-        budget_info[11], # التنقلات و النقل و الاتصالات
+        account_code,
+        account_label,
         f"{allocated_ae:,.2f}".replace(',', ' '),
         f"{prior_commitments:,.2f}".replace(',', ' '),
         f"{initial_balance:,.2f}".replace(',', ' '),
@@ -157,7 +167,7 @@ def generate_engagement_doc(output_path, employee, proposed_amount, prior_commit
 
     p_body = doc.add_paragraph()
     set_rtl(p_body)
-    r_body = p_body.add_run(f"التزام بسند رقم {commitment_num} كشف مصاريف تنقل ومهمات لفائدة السيد(ة): {employee[1]} ({employee[2]})")
+    r_body = p_body.add_run(f"التزام بسند رقم {commitment_num} بتاريخ {commitment_date} - كشف مصاريف تنقل ومهمات لفائدة السيد(ة): {employee[1]} ({employee[2]})")
     r_body.bold = True; r_body.font.name = 'Arial'; r_body.font.size = Pt(10)
 
     # 5. جدول التأشيرة والإمضاءات (Table 4)
@@ -177,6 +187,6 @@ def generate_engagement_doc(output_path, employee, proposed_amount, prior_commit
     p_box0.add_run("\n\nختم\nامضاء\n\n").font.name = 'Arial'
 
     p_box1 = t_sign.cell(1, 1).paragraphs[0]; set_rtl(p_box1)
-    p_box1.add_run("رقم التأشيرة : \n\nتاريخ التأشيرة : \n\nإمضاء :                                  الختم : \n").font.name = 'Arial'
+    p_box1.add_run("رقم التأشيرة :\nتاريخ التأشيرة :\n\nإمضاء :                                  الختم :").font.name = 'Arial'
 
     doc.save(output_path)
