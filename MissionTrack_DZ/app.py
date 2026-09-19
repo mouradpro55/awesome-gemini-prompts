@@ -68,9 +68,23 @@ def export_engagement(emp_id):
         # حساب المبلغ المقترح للكشف الحالي
         proposed_amt = sum(m[15] for m in missions_list)
 
-        # مجموع الالتزامات السابقة لجميع الموظفين الآخرين
         summary = database.get_budget_summary()
-        prior_commitments = max(0.0, summary['total_consumed'] - proposed_amt)
+
+        # Fetch params from request if available, otherwise use defaults
+        req_card_num = request.args.get('card_number', f"0{emp_id}")
+        req_card_date = request.args.get('card_date', missions_list[-1][6] if missions_list[-1][6] else "06-04-2026")
+
+        req_prior_str = request.args.get('prior_commitments')
+        if req_prior_str is not None and req_prior_str.strip() != "":
+            prior_commitments = float(req_prior_str)
+        else:
+            prior_commitments = max(0.0, summary['total_consumed'] - proposed_amt)
+
+        req_alloc_str = request.args.get('allocated_budget')
+        if req_alloc_str is not None and req_alloc_str.strip() != "":
+            allocated_ae = float(req_alloc_str)
+        else:
+            allocated_ae = summary['allocated_budget']
 
         budget_info = database.get_budget_credit_info()
         save_dir = get_user_downloads_dir()
@@ -86,8 +100,9 @@ def export_engagement(emp_id):
             proposed_amount=proposed_amt,
             prior_commitments=prior_commitments,
             budget_info=budget_info,
-            commitment_num=f"0{emp_id}",
-            commitment_date=missions_list[-1][6] if missions_list[-1][6] else "06-04-2026"
+            commitment_num=req_card_num,
+            commitment_date=req_card_date,
+            allocated_ae=allocated_ae
         )
         open_file_externally(out_path)
         return redirect(url_for('missions', emp_id=emp_id))
@@ -254,7 +269,8 @@ def missions():
         return redirect(url_for('missions', emp_id=selected_emp_id))
 
     missions_list = database.get_missions_for_employee(selected_emp_id) if selected_emp_id else []
-    return render_template('missions.html', employees=emps, missions=missions_list, selected_emp_id=selected_emp_id)
+    summary = database.get_budget_summary()
+    return render_template('missions.html', employees=emps, missions=missions_list, selected_emp_id=selected_emp_id, summary=summary)
 
 @app.route('/calc_preview', methods=['POST'])
 def calc_preview():

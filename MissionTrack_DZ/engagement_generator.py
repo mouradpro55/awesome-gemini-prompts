@@ -49,14 +49,14 @@ def set_table_borders(table):
             borders.append(b)
         tblPr[0].append(borders)
 
-def generate_engagement_doc(output_path, employee, proposed_amount, prior_commitments, budget_info, commitment_num="01", commitment_date="06-04-2026"):
+def generate_engagement_doc(output_path, employee, proposed_amount, prior_commitments, budget_info, commitment_num="01", commitment_date="06-04-2026", allocated_ae=None):
     """
     توليد بطاقة الالتزام المالي مطابقة للنموذج الرسمي
     الحساب المالي:
       الرصيد الأولي = رخصة الالتزام - الالتزامات السابقة
       الرصيد المتبقي = الرصيد الأولي - الالتزام المقترح
     """
-    allocated_ae = budget_info[14] if len(budget_info) > 14 else 600000.00
+    allocated_ae = float(allocated_ae) if allocated_ae is not None else (budget_info[14] if len(budget_info) > 14 else 600000.00)
     initial_balance = allocated_ae - prior_commitments
     remaining_balance = initial_balance - proposed_amount
 

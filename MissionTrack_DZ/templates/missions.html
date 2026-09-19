@@ -87,9 +87,9 @@
                     تصدير الكشف الإجمالي لجميع المهام المسجلة أدناه:
                     <a href="{{ url_for('export_report', type='pdf', emp_id=selected_emp_id) }}" class="inline-block bg-red-600 text-white px-4 py-2 rounded text-sm ml-2 hover:bg-red-700">تصدير PDF</a>
                     <a href="{{ url_for('export_report', type='excel', emp_id=selected_emp_id) }}" class="inline-block bg-green-600 text-white px-4 py-2 rounded text-sm hover:bg-green-700">تصدير Excel</a>
-                    <a href="{{ url_for('export_engagement', emp_id=selected_emp_id) }}" class="inline-block bg-teal-600 text-white px-4 py-2 rounded text-sm hover:bg-teal-700 ml-2">
+                    <button type="button" onclick="openEngagementModal('{{ selected_emp_id }}', {{ proposed_sum }})" class="inline-block bg-teal-600 text-white px-4 py-2 rounded text-sm hover:bg-teal-700 ml-2">
                         <i class="fas fa-file-invoice-dollar"></i> استخراج بطاقة الالتزام (Word)
-                    </a>
+                    </button>
                     <a href="{{ url_for('export_all_excel') }}" class="inline-block bg-indigo-600 text-white px-4 py-2 rounded text-sm ml-2 hover:bg-indigo-700">
                         <i class="fas fa-file-excel"></i> تصدير الكشف الشامل لجميع الموظفين (ملف مجمع)
                     </a>
@@ -103,6 +103,10 @@
             </tr>
         </thead>
         <tbody>
+{% set proposed_sum = 0 %}
+            {% for m in missions %}
+               {% set proposed_sum = proposed_sum + m[15] %}
+            {% endfor %}
             {% for m in missions %}
             <tr>
                 <td class="px-5 py-5 border-b text-sm">
@@ -199,6 +203,75 @@ function editMission(m) {
     window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
+
+function getTodayFormatted() {
+    const today = new Date();
+    const dd = String(today.getDate()).padStart(2, '0');
+    const mm = String(today.getMonth() + 1).padStart(2, '0'); // January is 0!
+    const yyyy = today.getFullYear();
+    return dd + '-' + mm + '-' + yyyy;
+}
+
+function openEngagementModal(empId, proposedAmount) {
+    const modal = document.getElementById('engagementModal');
+    const form = document.getElementById('engagementForm');
+    const dateInput = document.getElementById('card_date');
+    const priorInput = document.getElementById('prior_commitments');
+
+    // Set form action dynamically
+    form.action = '/export_engagement/' + empId;
+
+    // Default date to today
+    dateInput.value = getTodayFormatted();
+
+    // Calculate default prior commitments
+    const totalConsumed = {{ summary.total_consumed if summary else 0 }};
+    let defaultPrior = totalConsumed - proposedAmount;
+    if (defaultPrior < 0) defaultPrior = 0;
+
+    priorInput.value = defaultPrior;
+
+    // Show modal
+    modal.classList.remove('hidden');
+}
+
+function closeEngagementModal() {
+    document.getElementById('engagementModal').classList.add('hidden');
+}
+
 </script>
 {% endif %}
+
+<!-- Modal for Export Engagement -->
+<div id="engagementModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 hidden">
+    <div class="bg-white rounded-lg shadow-xl w-full max-w-md p-6 relative">
+        <h3 class="text-xl font-bold mb-4 text-slate-800">إعدادات استخراج بطاقة الالتزام</h3>
+        <p class="text-sm text-slate-500 mb-6">يرجى تأكيد بيانات البطاقة قبل التصدير.</p>
+
+        <form id="engagementForm" method="GET" action="">
+            <div class="mb-4">
+                <label class="block text-gray-700 text-sm font-bold mb-2">رقم بطاقة الالتزام</label>
+                <input type="text" name="card_number" id="card_number" class="w-full border p-2 rounded focus:ring-2 focus:ring-teal-500" value="0{{ selected_emp_id }}" required>
+            </div>
+            <div class="mb-4">
+                <label class="block text-gray-700 text-sm font-bold mb-2">تاريخ بطاقة الالتزام</label>
+                <input type="text" name="card_date" id="card_date" class="w-full border p-2 rounded focus:ring-2 focus:ring-teal-500" required>
+            </div>
+            <div class="mb-4">
+                <label class="block text-gray-700 text-sm font-bold mb-2">رخصة الالتزام (الرصيد الكلي)</label>
+                <input type="number" step="0.01" name="allocated_budget" id="allocated_budget" class="w-full border p-2 rounded focus:ring-2 focus:ring-teal-500" value="{{ summary.allocated_budget if summary else 600000.0 }}" required>
+            </div>
+            <div class="mb-6">
+                <label class="block text-gray-700 text-sm font-bold mb-2">مجموع الالتزامات السابقة (تراكمي)</label>
+                <input type="number" step="0.01" name="prior_commitments" id="prior_commitments" class="w-full border p-2 rounded focus:ring-2 focus:ring-teal-500" required>
+            </div>
+
+            <div class="flex justify-end space-x-2 space-x-reverse">
+                <button type="button" onclick="closeEngagementModal()" class="px-4 py-2 bg-gray-300 hover:bg-gray-400 text-gray-800 rounded font-bold">إلغاء</button>
+                <button type="submit" class="px-4 py-2 bg-teal-600 hover:bg-teal-700 text-white rounded font-bold">تصدير Word</button>
+            </div>
+        </form>
+    </div>
+</div>
+
 {% endblock %}
