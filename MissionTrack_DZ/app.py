@@ -1,9 +1,23 @@
 from flask import Flask, render_template, request, redirect, url_for, jsonify, send_file
 from resource_utils import resource_path
 import subprocess
+import time
+import os
+
+def get_safe_output_path(filepath):
+    if os.path.exists(filepath):
+        try:
+            with open(filepath, 'a'):
+                pass
+        except PermissionError:
+            timestamp = time.strftime("%H%M%S")
+            base, ext = os.path.splitext(filepath)
+            return f"{base}_{timestamp}{ext}"
+    return filepath
 import webbrowser
 import threading
 import os
+import time
 import database
 from calculator import calculate_allowances
 from tafqeet import tafqeet
@@ -64,6 +78,7 @@ def export_engagement(emp_id):
         emp_clean = "".join(c for c in emp[1] if c.isalnum() or c in (' ', '_', '-')).strip().replace(" ", "_")
         filename = f"بطاقة_التزام_{emp_clean}.docx".replace(" ", "_")
         out_path = os.path.join(save_dir, filename)
+        out_path = get_safe_output_path(out_path)
 
         generate_engagement_doc(
             output_path=out_path,
@@ -276,6 +291,7 @@ def export_report(type, emp_id):
         if type == "pdf":
             filename = f"كشف_مهمات_{emp_clean_name}.pdf"
             output_path = os.path.join(save_dir, filename)
+            output_path = get_safe_output_path(output_path)
             generate_pdf_report(emp, missions_list, output_path, tafqeet_text, database.get_settings())
             open_file_externally(output_path)
             return redirect(url_for('missions', emp_id=emp_id))
@@ -283,6 +299,7 @@ def export_report(type, emp_id):
         elif type == "excel":
             filename = f"كشف_مهمات_{emp_clean_name}.xlsx"
             output_path = os.path.join(save_dir, filename)
+            output_path = get_safe_output_path(output_path)
             generate_excel_report(emp, missions_list, output_path, tafqeet_text, database.get_settings())
             open_file_externally(output_path)
             return redirect(url_for('missions', emp_id=emp_id))
@@ -310,6 +327,7 @@ def export_all_excel():
 
         save_dir = get_user_downloads_dir()
         output_filename = os.path.join(save_dir, "كشف_المهام_الإجمالي_لكافة_الموظفين.xlsx")
+        output_filename = get_safe_output_path(output_filename)
 
         from excel_generator import generate_consolidated_excel_report
         generate_consolidated_excel_report(employees_data, output_filename, settings=database.get_settings())
