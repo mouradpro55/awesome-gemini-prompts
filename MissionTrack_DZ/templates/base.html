@@ -11,6 +11,24 @@
     </style>
 </head>
 <body class="text-gray-800">
+
+    <!-- Splash Screen -->
+    <div id="splashScreen" class="fixed inset-0 z-50 flex flex-col items-center justify-center bg-slate-900 text-white transition-opacity duration-500">
+        <div class="text-center">
+            <h1 class="text-5xl font-bold mb-4 text-blue-400">MissionTrack DZ</h1>
+            <p class="text-xl mb-8 text-slate-300">المنظومة الرقمية لتسيير كشوفات مصاريف التنقل وبطاقات الالتزام</p>
+
+            <div class="w-64 h-2 bg-slate-700 rounded-full mx-auto overflow-hidden mb-8">
+                <div id="loadingBar" class="h-full bg-blue-500 w-0 transition-all duration-2000 ease-out"></div>
+            </div>
+
+            <div class="text-sm text-slate-400 leading-relaxed">
+                <p>فكرة وتطوير: <span class="font-bold text-slate-200">مصباح مراد</span></p>
+                <p>مديرية المواصلات السلكية واللاسلكية الوطنية - ولاية المنيعة (2026)</p>
+            </div>
+        </div>
+    </div>
+
     <div class="flex h-screen overflow-hidden">
         <!-- Sidebar -->
         <aside class="w-64 bg-slate-800 text-white flex flex-col hidden md:flex">
@@ -48,5 +66,30 @@
             </div>
         </main>
     </div>
+
+    <!-- Splash Screen Logic -->
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            const splash = document.getElementById('splashScreen');
+            if (!sessionStorage.getItem('splashShown')) {
+                // Animate loading bar
+                setTimeout(() => {
+                    document.getElementById('loadingBar').style.width = '100%';
+                }, 100);
+
+                // Fade out and remove after 2.2 seconds
+                setTimeout(() => {
+                    splash.style.opacity = '0';
+                    setTimeout(() => {
+                        splash.style.display = 'none';
+                        sessionStorage.setItem('splashShown', 'true');
+                    }, 500); // Wait for fade transition
+                }, 2200);
+            } else {
+                splash.style.display = 'none';
+            }
+        });
+    </script>
+
 </body>
 </html>
