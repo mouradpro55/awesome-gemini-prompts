@@ -16,16 +16,30 @@
     <div id="splashScreen" class="fixed inset-0 z-50 flex flex-col items-center justify-center bg-slate-900 text-white transition-opacity duration-500">
         <div class="text-center">
             <h1 class="text-5xl font-bold mb-4 text-blue-400">MissionTrack DZ</h1>
-            <p class="text-xl mb-8 text-slate-300">المنظومة الرقمية لتسيير كشوفات مصاريف التنقل وبطاقات الالتزام</p>
+            <p class="text-xl mb-12 text-slate-300">المنظومة الرقمية لتسيير كشوفات مصاريف التنقل وبطاقات الالتزام</p>
 
-            <div class="w-64 h-2 bg-slate-700 rounded-full mx-auto overflow-hidden mb-8">
-                <div id="loadingBar" class="h-full bg-blue-500 w-0 transition-all duration-2000 ease-out"></div>
+            <div class="mb-10 text-sm leading-relaxed bg-slate-800 p-6 rounded-lg border border-slate-700 shadow-lg w-full max-w-lg mx-auto">
+                <div class="mb-4 pb-4 border-b border-slate-700">
+                    <p class="text-slate-400 mb-1">تحت إشراف: <span class="text-slate-200">المدير الولائي للمواصلات السلكية واللاسلكية الوطنية لولاية المنيعة</span></p>
+                    <p class="text-lg font-bold text-yellow-400">السيد: بن طراري إبراهيم الخليل</p>
+                </div>
+                <div>
+                    <p class="text-slate-400 mb-1">فكرة وتطوير: <span class="text-lg font-bold text-blue-300">مصباح مراد</span></p>
+                    <p class="text-slate-500 text-xs">(مديرية المواصلات السلكية واللاسلكية الوطنية - المنيعة • 2026)</p>
+                </div>
             </div>
 
-            <div class="text-sm text-slate-400 leading-relaxed">
-                <p>فكرة وتطوير: <span class="font-bold text-slate-200">مصباح مراد</span></p>
-                <p>مديرية المواصلات السلكية واللاسلكية الوطنية - ولاية المنيعة (2026)</p>
+            <div class="w-80 h-2 bg-slate-700 rounded-full mx-auto overflow-hidden mb-4 relative">
+                <div id="loadingBar" class="h-full bg-blue-500 w-0 transition-all ease-linear" style="transition-duration: 10000ms;"></div>
             </div>
+
+            <div class="flex items-center justify-center space-x-4 space-x-reverse mb-8">
+                <span id="countdownText" class="text-slate-400 font-mono text-lg">10 ثواني</span>
+            </div>
+
+            <button id="skipBtn" class="px-6 py-2 bg-slate-700 hover:bg-slate-600 text-slate-200 rounded-full text-sm transition-colors border border-slate-600">
+                تخطي والدخول &raquo;
+            </button>
         </div>
     </div>
 
@@ -71,20 +85,45 @@
     <script>
         document.addEventListener("DOMContentLoaded", function() {
             const splash = document.getElementById('splashScreen');
-            if (!sessionStorage.getItem('splashShown')) {
-                // Animate loading bar
-                setTimeout(() => {
-                    document.getElementById('loadingBar').style.width = '100%';
-                }, 100);
+            const skipBtn = document.getElementById('skipBtn');
+            const countdownText = document.getElementById('countdownText');
+            const loadingBar = document.getElementById('loadingBar');
 
-                // Fade out and remove after 2.2 seconds
-                setTimeout(() => {
+            if (!sessionStorage.getItem('splashShown')) {
+                let timeLeft = 10;
+                let timerInterval;
+                let isClosing = false;
+
+                const closeSplash = () => {
+                    if (isClosing) return;
+                    isClosing = true;
+                    clearInterval(timerInterval);
                     splash.style.opacity = '0';
                     setTimeout(() => {
                         splash.style.display = 'none';
                         sessionStorage.setItem('splashShown', 'true');
-                    }, 500); // Wait for fade transition
-                }, 2200);
+                    }, 500);
+                };
+
+                // Animate loading bar smoothly over 10s
+                setTimeout(() => {
+                    loadingBar.style.width = '100%';
+                }, 50);
+
+                // Countdown timer
+                timerInterval = setInterval(() => {
+                    timeLeft -= 1;
+                    if (timeLeft > 0) {
+                        countdownText.innerText = timeLeft + " ثواني";
+                    } else {
+                        countdownText.innerText = "جاري الدخول...";
+                        closeSplash();
+                    }
+                }, 1000);
+
+                // Skip button event
+                skipBtn.addEventListener('click', closeSplash);
+
             } else {
                 splash.style.display = 'none';
             }
