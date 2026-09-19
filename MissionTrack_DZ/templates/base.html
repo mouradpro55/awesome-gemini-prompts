@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MissionTrack DZ - نافذتي للتنقل</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Tajawal', sans-serif; background-color: #f3f4f6; }
+    </style>
+</head>
+<body class="text-gray-800">
+
+    <!-- Splash Screen -->
+    <div id="splashScreen" class="fixed inset-0 z-50 flex flex-col items-center justify-center bg-slate-900 text-white transition-opacity duration-500">
+        <div class="text-center">
+            <h1 class="text-5xl font-bold mb-4 text-blue-400">MissionTrack DZ</h1>
+            <p class="text-xl mb-12 text-slate-300">المنظومة الرقمية لتسيير كشوفات مصاريف التنقل وبطاقات الالتزام</p>
+
+            <div class="mb-10 text-sm leading-relaxed bg-slate-800 p-6 rounded-lg border border-slate-700 shadow-lg w-full max-w-lg mx-auto">
+                <div class="mb-4 pb-4 border-b border-slate-700">
+                    <p class="text-slate-400 mb-1">تحت إشراف: <span class="text-slate-200">المدير الولائي للمواصلات السلكية واللاسلكية الوطنية لولاية المنيعة</span></p>
+                    <p class="text-lg font-bold text-yellow-400">السيد: بن طراري إبراهيم الخليل</p>
+                </div>
+                <div>
+                    <p class="text-slate-400 mb-1">فكرة وتطوير: <span class="text-lg font-bold text-blue-300">مصباح مراد</span></p>
+                    <p class="text-slate-500 text-xs">(مديرية المواصلات السلكية واللاسلكية الوطنية - المنيعة • 2026)</p>
+                </div>
+            </div>
+
+            <div class="w-80 h-2 bg-slate-700 rounded-full mx-auto overflow-hidden mb-4 relative">
+                <div id="loadingBar" class="h-full bg-blue-500 w-0 transition-all ease-linear" style="transition-duration: 10000ms;"></div>
+            </div>
+
+            <div class="flex items-center justify-center space-x-4 space-x-reverse mb-8">
+                <span id="countdownText" class="text-slate-400 font-mono text-lg">10 ثواني</span>
+            </div>
+
+            <button id="skipBtn" class="px-6 py-2 bg-slate-700 hover:bg-slate-600 text-slate-200 rounded-full text-sm transition-colors border border-slate-600">
+                تخطي والدخول &raquo;
+            </button>
+        </div>
+    </div>
+
+    <div class="flex h-screen overflow-hidden">
+        <!-- Sidebar -->
+        <aside class="w-64 bg-slate-800 text-white flex flex-col hidden md:flex">
+            <div class="p-6 text-center text-2xl font-bold border-b border-slate-700">
+                MissionTrack DZ
+            </div>
+            <nav class="flex-1 px-4 py-6 space-y-4">
+                <a href="{{ url_for('dashboard') }}" class="block px-4 py-2 rounded hover:bg-slate-700 transition">لوحة القيادة</a>
+                <a href="{{ url_for('employees') }}" class="block px-4 py-2 rounded hover:bg-slate-700 transition">👥 إدارة الموظفين</a>
+                <a href="{{ url_for('missions') }}" class="block px-4 py-2 rounded hover:bg-slate-700 transition">✈️ المهمات والكشوفات</a>
+                <a href="{{ url_for('budget') }}" class="block px-4 py-2 rounded hover:bg-slate-700 transition">💰 متابعة الميزانية</a>
+                <a href="{{ url_for('settings') }}" class="block px-4 py-2 rounded hover:bg-slate-700 transition">⚙️ إعدادات المؤسسة</a>
+            </nav>
+            <div class="p-4 bg-slate-900 text-xs text-slate-300 border-t border-slate-700 leading-relaxed">
+                <div class="font-bold text-yellow-400 mb-1">MissionTrack DZ v1.0</div>
+                <div class="mb-1">
+                    <span class="text-slate-400">تطوير:</span> <strong>السيد مصباح مراد</strong><br>
+                    <span class="text-slate-400">المديرية:</span> م.م.س.ل لولاية المنيعة<br>
+                    <span class="text-slate-400">الهاتف:</span> <span dir="ltr">0770 11 28 18</span><br>
+                    <span class="text-slate-400">البريد:</span> <span class="text-[10px] text-blue-300">m.elgolea47@gmail.com</span>
+                </div>
+                <div class="pt-1 border-t border-slate-700 text-[11px] text-slate-400">
+                    تحت إشراف: <strong>DTN بن طراري إبراهيم خليل</strong>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="flex-1 flex flex-col h-screen overflow-y-auto">
+            <header class="bg-white shadow p-4 md:hidden">
+                <h1 class="text-xl font-bold">MissionTrack DZ</h1>
+            </header>
+            <div class="p-8">
+                {% block content %}{% endblock %}
+            </div>
+        </main>
+    </div>
+
+    <!-- Splash Screen Logic -->
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            const splash = document.getElementById('splashScreen');
+            const skipBtn = document.getElementById('skipBtn');
+            const countdownText = document.getElementById('countdownText');
+            const loadingBar = document.getElementById('loadingBar');
+
+            if (!sessionStorage.getItem('splashShown')) {
+                let timeLeft = 10;
+                let timerInterval;
+                let isClosing = false;
+
+                const closeSplash = () => {
+                    if (isClosing) return;
+                    isClosing = true;
+                    clearInterval(timerInterval);
+                    splash.style.opacity = '0';
+                    setTimeout(() => {
+                        splash.style.display = 'none';
+                        sessionStorage.setItem('splashShown', 'true');
+                    }, 500);
+                };
+
+                // Animate loading bar smoothly over 10s
+                setTimeout(() => {
+                    loadingBar.style.width = '100%';
+                }, 50);
+
+                // Countdown timer
+                timerInterval = setInterval(() => {
+                    timeLeft -= 1;
+                    if (timeLeft > 0) {
+                        countdownText.innerText = timeLeft + " ثواني";
+                    } else {
+                        countdownText.innerText = "جاري الدخول...";
+                        closeSplash();
+                    }
+                }, 1000);
+
+                // Skip button event
+                skipBtn.addEventListener('click', closeSplash);
+
+            } else {
+                splash.style.display = 'none';
+            }
+        });
+    </script>
+
+</body>
+</html>
