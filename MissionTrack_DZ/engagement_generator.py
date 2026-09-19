@@ -117,20 +117,17 @@ def generate_engagement_doc(output_path, employee, proposed_amount, prior_commit
         t = doc.add_table(rows=1, cols=2)
         set_table_rtl(t)
         t.alignment = WD_TABLE_ALIGNMENT.CENTER
-        # لا نضع set_table_borders هنا ليكون الجدول بدون حدود خارجية
 
-        # ضبط مساحة العرض للخلايا
-        t.rows[0].cells[0].width = Inches(5.5)
-        t.rows[0].cells[1].width = Inches(0.3)
-
-        # الخلية الأولى (النص)
-        p_t = t.rows[0].cells[0].paragraphs[0]; set_rtl(p_t)
+        # الخلية 0: النص (عريض وبدون حدود، يظهر يميناً بفضل RTL)
+        cell_t = t.rows[0].cells[0]
+        cell_t.width = Inches(5.5)
+        p_t = cell_t.paragraphs[0]; set_rtl(p_t)
         r_t = p_t.add_run(title_text); r_t.bold = True; r_t.font.name = 'Arial'; r_t.font.size = Pt(10)
 
-        # الخلية الثانية (مربع الاختيار Checkbox)
+        # الخلية 1: مربع الاختيار Checkbox (صغير ومحاط بحدود، يظهر يساراً بفضل RTL)
         cell_m = t.rows[0].cells[1]
+        cell_m.width = Inches(0.3)
         set_cell_borders(cell_m) # إحاطة المربع فقط بحدود
-
         p_m = cell_m.paragraphs[0]; set_rtl(p_m); p_m.alignment = WD_ALIGN_PARAGRAPH.CENTER
         r_m = p_m.add_run(mark); r_m.bold = True; r_m.font.name = 'Arial'; r_m.font.size = Pt(11)
 
