@@ -18,6 +18,12 @@ def set_cell_background(cell, fill_color):
     shd.set(qn('w:fill'), fill_color)
     tcPr.append(shd)
 
+def set_table_rtl(table):
+    tblPr = table._element.xpath('w:tblPr')
+    if tblPr:
+        bidi = OxmlElement('w:bidiVisual')
+        tblPr[0].append(bidi)
+
 def set_cell_borders(cell):
     tcPr = cell._element.get_or_add_tcPr()
     tcBorders = OxmlElement('w:tcBorders')
@@ -109,6 +115,7 @@ def generate_engagement_doc(output_path, employee, proposed_amount, prior_commit
                              ("العنوان الثاني : نفقات تسيير المصالح", "X"),
                              ("العنوان الرابع : نفقات التحويل", "")]:
         t = doc.add_table(rows=1, cols=2)
+        set_table_rtl(t)
         t.alignment = WD_TABLE_ALIGNMENT.CENTER
         # لا نضع set_table_borders هنا ليكون الجدول بدون حدود خارجية
 
@@ -131,6 +138,7 @@ def generate_engagement_doc(output_path, employee, proposed_amount, prior_commit
 
     # 3. جدول الالتزام والحساب المالي (Table 3)
     t_fin = doc.add_table(rows=3, cols=7)
+    set_table_rtl(t_fin)
     t_fin.alignment = WD_TABLE_ALIGNMENT.CENTER
     set_table_borders(t_fin)
 
@@ -192,6 +200,7 @@ def generate_engagement_doc(output_path, employee, proposed_amount, prior_commit
 
     # 5. جدول التأشيرة والإمضاءات (Table 4)
     t_sign = doc.add_table(rows=2, cols=2)
+    set_table_rtl(t_sign)
     t_sign.alignment = WD_TABLE_ALIGNMENT.CENTER
     set_table_borders(t_sign)
     t_sign.rows[0].cells[0].width = Inches(3.2)
