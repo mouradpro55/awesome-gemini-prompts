@@ -118,18 +118,18 @@ def generate_engagement_doc(output_path, employee, proposed_amount, prior_commit
         set_table_rtl(t)
         t.alignment = WD_TABLE_ALIGNMENT.CENTER
 
-        # الخلية 0: النص (عريض وبدون حدود، يظهر يميناً بفضل RTL)
-        cell_t = t.rows[0].cells[0]
+        # الخلية 0: مربع الاختيار Checkbox (صغير ومحاط بحدود، يظهر يميناً في أول السطر بفضل RTL)
+        cell_m = t.rows[0].cells[0]
+        cell_m.width = Inches(0.3)
+        set_cell_borders(cell_m)
+        p_m = cell_m.paragraphs[0]; set_rtl(p_m); p_m.alignment = WD_ALIGN_PARAGRAPH.CENTER
+        r_m = p_m.add_run(mark); r_m.bold = True; r_m.font.name = 'Arial'; r_m.font.size = Pt(11)
+
+        # الخلية 1: النص (عريض وبدون حدود، يظهر يسار المربع)
+        cell_t = t.rows[0].cells[1]
         cell_t.width = Inches(5.5)
         p_t = cell_t.paragraphs[0]; set_rtl(p_t)
         r_t = p_t.add_run(title_text); r_t.bold = True; r_t.font.name = 'Arial'; r_t.font.size = Pt(10)
-
-        # الخلية 1: مربع الاختيار Checkbox (صغير ومحاط بحدود، يظهر يساراً بفضل RTL)
-        cell_m = t.rows[0].cells[1]
-        cell_m.width = Inches(0.3)
-        set_cell_borders(cell_m) # إحاطة المربع فقط بحدود
-        p_m = cell_m.paragraphs[0]; set_rtl(p_m); p_m.alignment = WD_ALIGN_PARAGRAPH.CENTER
-        r_m = p_m.add_run(mark); r_m.bold = True; r_m.font.name = 'Arial'; r_m.font.size = Pt(11)
 
         doc.add_paragraph().paragraph_format.space_after = Pt(2)
 
@@ -204,15 +204,15 @@ def generate_engagement_doc(output_path, employee, proposed_amount, prior_commit
     t_sign.rows[0].cells[1].width = Inches(3.2)
 
     p_s0 = t_sign.cell(0, 0).paragraphs[0]; set_rtl(p_s0); p_s0.alignment = WD_ALIGN_PARAGRAPH.CENTER
-    r = p_s0.add_run("إطار مخصص للآمر بالصرف"); r.bold = True; r.font.name = 'Arial'; r.font.size = Pt(10)
+    r = p_s0.add_run("إطار مخصص للمراقب الميزانياتي"); r.bold = True; r.font.name = 'Arial'; r.font.size = Pt(10)
 
     p_s1 = t_sign.cell(0, 1).paragraphs[0]; set_rtl(p_s1); p_s1.alignment = WD_ALIGN_PARAGRAPH.CENTER
-    r = p_s1.add_run("إطار مخصص للمراقب الميزانياتي"); r.bold = True; r.font.name = 'Arial'; r.font.size = Pt(10)
+    r = p_s1.add_run("إطار مخصص للآمر بالصرف"); r.bold = True; r.font.name = 'Arial'; r.font.size = Pt(10)
 
     p_box0 = t_sign.cell(1, 0).paragraphs[0]; set_rtl(p_box0)
-    p_box0.add_run("\n\nختم\nامضاء\n\n").font.name = 'Arial'
+    p_box0.add_run("رقم التأشيرة :\nتاريخ التأشيرة :\n\nإمضاء :                                  الختم :").font.name = 'Arial'
 
     p_box1 = t_sign.cell(1, 1).paragraphs[0]; set_rtl(p_box1)
-    p_box1.add_run("رقم التأشيرة :\nتاريخ التأشيرة :\n\nإمضاء :                                  الختم :").font.name = 'Arial'
+    p_box1.add_run("\nختم \n\nامضاء\n\n").font.name = 'Arial'
 
     doc.save(output_path)
