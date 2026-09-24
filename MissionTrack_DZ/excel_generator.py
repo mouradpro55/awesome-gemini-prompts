@@ -2,6 +2,7 @@ import openpyxl
 import os
 from tafqeet import tafqeet
 from resource_utils import resource_path
+from calculator import get_rates
 
 def sanitize_sheet_title(title, existing_titles):
     invalid_chars = r'\/?*:][\''
@@ -76,20 +77,25 @@ def populate_employee_sheet(ws, employee, missions, tafqeet_text, settings=None)
 
         # Determine regions
         n_meals, n_nights, s_meals, s_nights = 0, 0, 0, 0
+
+        is_high_rank = bool(employee[9]) if len(employee) > 9 else False
+        category = employee[5]
+        rates = get_rates(m[12], is_high_rank, category)
+
         if m[12] == "شمال":
             n_meals = m[13]
             n_nights = m[14]
             total_n_meals += n_meals
             total_n_nights += n_nights
-            total_n_meals_amt += (n_meals * 800 * multiplier)
-            total_n_nights_amt += (n_nights * 3200 * multiplier)
+            total_n_meals_amt += (n_meals * rates["meal"] * multiplier)
+            total_n_nights_amt += (n_nights * rates["night"] * multiplier)
         else:
             s_meals = m[13]
             s_nights = m[14]
             total_s_meals += s_meals
             total_s_nights += s_nights
-            total_s_meals_amt += (s_meals * 1000 * multiplier)
-            total_s_nights_amt += (s_nights * 4000 * multiplier)
+            total_s_meals_amt += (s_meals * rates["meal"] * multiplier)
+            total_s_nights_amt += (s_nights * rates["night"] * multiplier)
 
         # Parse Departure and Return datetime strings (expected: "DD-MM-YYYY HH:MM")
         try:

@@ -1,9 +1,35 @@
 from datetime import datetime, time, timedelta
 
-def calculate_allowances(departure_str, return_str, region, is_training=False):
+def get_rates(region, is_high_rank, category):
+    zone = "جنوب" if region == "جنوب" else "شمال"
+
+    if is_high_rank:
+        return {"meal": 3200, "night": 6400}
+
+    cat = str(category).strip()
+    # Assuming category is a number string like "10" or "11"
+    try:
+        cat_num = int(cat)
+    except:
+        cat_num = 1
+
+    if cat_num >= 11:
+        rates = {
+            "شمال": {"meal": 1200, "night": 4800},
+            "جنوب": {"meal": 1500, "night": 6000}
+        }
+    else:
+        rates = {
+            "شمال": {"meal": 800, "night": 3200},
+            "جنوب": {"meal": 1000, "night": 4000}
+        }
+
+    return rates[zone]
+
+def calculate_allowances(departure_str, return_str, region, is_training=False, is_high_rank=False, category="10"):
     '''
     حساب عدد الوجبات والليالي والمبلغ الإجمالي المستحق
-    مع مراعاة نسبة 25% في حال كانت المهمة من أجل تكوين.
+    مع مراعاة نسبة 25% في حال كانت المهمة من أجل تكوين ومعدلات المناصب العليا.
     '''
     try:
         dep_dt = datetime.strptime(departure_str, "%d-%m-%Y %H:%M")
@@ -13,13 +39,6 @@ def calculate_allowances(departure_str, return_str, region, is_training=False):
 
     if ret_dt <= dep_dt:
         return 0, 0, 0, 0
-
-    rates = {
-        "شمال": {"meal": 800, "night": 3200},
-        "جنوب": {"meal": 1000, "night": 4000}
-    }
-
-    zone = region if region in rates else "شمال"
 
     total_meals = 0
     total_nights = 0
@@ -59,8 +78,9 @@ def calculate_allowances(departure_str, return_str, region, is_training=False):
     if total_nights > 0 and ret_dt.time() < time(6, 0):
         total_nights -= 1
 
-    meal_rate = rates[zone]["meal"]
-    night_rate = rates[zone]["night"]
+    rates = get_rates(region, is_high_rank, category)
+    meal_rate = rates["meal"]
+    night_rate = rates["night"]
 
     # احتساب المبلغ الخام الإجمالي
     gross_amount = (total_meals * meal_rate) + (total_nights * night_rate)

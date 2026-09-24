@@ -43,6 +43,12 @@
             <label class="block text-gray-700 text-sm font-bold mb-2">رقم الحساب</label>
             <input type="text" id="bank_account" name="bank_account" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
         </div>
+        <div class="col-span-1 md:col-span-2 flex items-center p-3 bg-yellow-50 border border-yellow-200 rounded">
+            <input type="checkbox" id="is_high_rank" name="is_high_rank" value="1" class="w-5 h-5 text-blue-600 rounded">
+            <label for="is_high_rank" class="mr-3 text-sm font-bold text-gray-800">
+                شاغل وظيفة عليا أو منصب سامٍ (تطبيق تسعيرة الإطعام 3200 دج / الإيواء 6400 دج مباشرة)
+            </label>
+        </div>
         <div class="col-span-1 md:col-span-2 text-center mt-4">
             <button type="submit" id="submit-btn" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-8 rounded focus:outline-none focus:shadow-outline">
                 حفظ الموظف
@@ -72,7 +78,7 @@
                 <td class="px-5 py-5 border-b border-gray-200 text-sm font-bold">{{ emp[1] }}</td>
                 <td class="px-5 py-5 border-b border-gray-200 text-sm">{{ emp[2] }}</td>
                 <td class="px-5 py-5 border-b border-gray-200 text-sm flex gap-4">
-                    <button type="button" onclick="editEmployee('{{ emp[0] }}', '{{ emp[1] }}', '{{ emp[2] }}', '{{ emp[3] }}', '{{ emp[4] }}', '{{ emp[5] }}', '{{ emp[6] }}', '{{ emp[7] }}', '{{ emp[8] }}')" class="text-blue-600 hover:text-blue-900 font-bold">تعديل</button>
+                    <button type="button" onclick="editEmployee('{{ emp[0] }}', '{{ emp[1] }}', '{{ emp[2] }}', '{{ emp[3] }}', '{{ emp[4] }}', '{{ emp[5] }}', '{{ emp[6] }}', '{{ emp[7] }}', '{{ emp[8] }}', '{{ emp[9] }}')" class="text-blue-600 hover:text-blue-900 font-bold">تعديل</button>
                     <form method="POST" action="{{ url_for('employees') }}" class="inline" onsubmit="return confirm('هل أنت متأكد من الحذف؟ سيتم حذف جميع المهام التابعة له أيضاً.');">
                         <input type="hidden" name="action" value="delete">
                         <input type="hidden" name="emp_id" value="{{ emp[0] }}">
@@ -86,7 +92,7 @@
 </div>
 
 <script>
-function editEmployee(id, name, rank, job, index, category, workplace, bank_type, bank_account) {
+function editEmployee(id, name, rank, job, index, category, workplace, bank_type, bank_account, is_high_rank) {
     document.getElementById('form-action').value = 'edit';
     document.getElementById('form-emp-id').value = id;
 
@@ -110,6 +116,7 @@ function editEmployee(id, name, rank, job, index, category, workplace, bank_type
 
 function resetForm() {
     document.getElementById('employee-form').reset();
+    document.getElementById('is_high_rank').checked = false;
     document.getElementById('form-action').value = 'add';
     document.getElementById('form-emp-id').value = '';
 

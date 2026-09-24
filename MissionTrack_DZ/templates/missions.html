@@ -9,7 +9,7 @@
             <label class="block text-gray-700 text-sm font-bold mb-2">اختر الموظف:</label>
             <select name="emp_id" class="shadow border rounded w-full py-2 px-3 text-gray-700 bg-white" onchange="this.form.submit()">
                 {% for emp in employees %}
-                <option value="{{ emp[0] }}" {% if selected_emp_id == emp[0]|string %}selected{% endif %}>{{ emp[1] }} ({{ emp[4] }})</option>
+                <option value="{{ emp[0] }}" data-is-high-rank="{{ emp[9] }}" data-category="{{ emp[5] }}" {% if selected_emp_id == emp[0]|string %}selected{% endif %}>{{ emp[1] }} ({{ emp[4] }})</option>
                 {% endfor %}
             </select>
         </div>
@@ -148,10 +148,18 @@ function calculate() {
 
     const m_type = document.getElementById('mission_type') ? document.getElementById('mission_type').value : 'عادية';
 
+    const empSelect = document.querySelector('select[name="emp_id"]');
+    let isHighRank = '0';
+    let cat = '10';
+    if(empSelect && empSelect.options[empSelect.selectedIndex]) {
+        isHighRank = empSelect.options[empSelect.selectedIndex].getAttribute('data-is-high-rank');
+        cat = empSelect.options[empSelect.selectedIndex].getAttribute('data-category');
+    }
+
     fetch('/calc_preview', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ dep: dep, ret: ret, reg: reg, mission_type: m_type })
+        body: JSON.stringify({ dep: dep, ret: ret, reg: reg, mission_type: m_type, is_high_rank: isHighRank, category: cat })
     })
     .then(res => res.json())
     .then(data => {

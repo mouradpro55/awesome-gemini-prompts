@@ -162,7 +162,8 @@ def employees():
                 'category': request.form.get('category'),
                 'workplace': request.form.get('workplace'),
                 'bank_type': request.form.get('bank_type'),
-                'bank_account': request.form.get('bank_account')
+                'bank_account': request.form.get('bank_account'),
+                'is_high_rank': 1 if request.form.get('is_high_rank') else 0
             }
             if data['full_name']:
                 database.add_employee(data)
@@ -176,7 +177,8 @@ def employees():
                 'category': request.form.get('category'),
                 'workplace': request.form.get('workplace'),
                 'bank_type': request.form.get('bank_type'),
-                'bank_account': request.form.get('bank_account')
+                'bank_account': request.form.get('bank_account'),
+                'is_high_rank': 1 if request.form.get('is_high_rank') else 0
             }
             if emp_id and data['full_name']:
                 database.update_employee(int(emp_id), data)
@@ -209,8 +211,12 @@ def missions():
             ret = request.form.get('return_datetime')
             reg = request.form.get('region')
 
+            emp = database.get_employee(int(selected_emp_id))
+            is_high_rank = bool(emp[9])
+            category = emp[5]
+
             is_training = (request.form.get('mission_type') == 'تكوين')
-            m_count, n_count, gross, tot = calculate_allowances(dep, ret, reg, is_training=is_training)
+            m_count, n_count, gross, tot = calculate_allowances(dep, ret, reg, is_training=is_training, is_high_rank=is_high_rank, category=category)
             t_txt = tafqeet(tot)
 
             data = {
@@ -241,8 +247,12 @@ def missions():
             ret = request.form.get('return_datetime')
             reg = request.form.get('region')
 
+            emp = database.get_employee(int(selected_emp_id))
+            is_high_rank = bool(emp[9])
+            category = emp[5]
+
             is_training = (request.form.get('mission_type') == 'تكوين')
-            m_count, n_count, gross, tot = calculate_allowances(dep, ret, reg, is_training=is_training)
+            m_count, n_count, gross, tot = calculate_allowances(dep, ret, reg, is_training=is_training, is_high_rank=is_high_rank, category=category)
             t_txt = tafqeet(tot)
 
             data = {
@@ -276,8 +286,10 @@ def missions():
 def calc_preview():
     data = request.json
     is_training = (data.get('mission_type') == 'تكوين')
+    is_high_rank = (data.get('is_high_rank') == '1' or data.get('is_high_rank') is True)
+    category = data.get('category', '10')
     m_count, n_count, gross, net = calculate_allowances(
-        data.get('dep'), data.get('ret'), data.get('reg'), is_training=is_training
+        data.get('dep'), data.get('ret'), data.get('reg'), is_training=is_training, is_high_rank=is_high_rank, category=category
     )
     t_txt = tafqeet(net)
     return jsonify({

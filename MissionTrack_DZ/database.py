@@ -34,6 +34,11 @@ def init_db():
         )
     """)
 
+    cursor.execute("PRAGMA table_info(employees)")
+    cols = [col[1] for col in cursor.fetchall()]
+    if 'is_high_rank' not in cols:
+        cursor.execute("ALTER TABLE employees ADD COLUMN is_high_rank INTEGER DEFAULT 0")
+
     # Create Missions Table
     cursor.execute("""
         CREATE TABLE IF NOT EXISTS missions (
@@ -206,10 +211,10 @@ def add_employee(data):
     conn = get_connection()
     cursor = conn.cursor()
     cursor.execute("""
-        INSERT INTO employees (full_name, rank, job_title, index_number, category, workplace, bank_type, bank_account)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+        INSERT INTO employees (full_name, rank, job_title, index_number, category, workplace, bank_type, bank_account, is_high_rank)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
     """, (data.get('full_name'), data.get('rank'), data.get('job_title'), data.get('index_number'),
-          data.get('category'), data.get('workplace'), data.get('bank_type'), data.get('bank_account')))
+          data.get('category'), data.get('workplace'), data.get('bank_type'), data.get('bank_account'), int(data.get('is_high_rank', 0))))
     conn.commit()
     conn.close()
     init_budget_tables()
@@ -219,10 +224,10 @@ def update_employee(emp_id, data):
     cursor = conn.cursor()
     cursor.execute("""
         UPDATE employees
-        SET full_name=?, rank=?, job_title=?, index_number=?, category=?, workplace=?, bank_type=?, bank_account=?
+        SET full_name=?, rank=?, job_title=?, index_number=?, category=?, workplace=?, bank_type=?, bank_account=?, is_high_rank=?
         WHERE id=?
     """, (data.get('full_name'), data.get('rank'), data.get('job_title'), data.get('index_number'),
-          data.get('category'), data.get('workplace'), data.get('bank_type'), data.get('bank_account'), emp_id))
+          data.get('category'), data.get('workplace'), data.get('bank_type'), data.get('bank_account'), int(data.get('is_high_rank', 0)), emp_id))
     conn.commit()
     conn.close()
     init_budget_tables()
