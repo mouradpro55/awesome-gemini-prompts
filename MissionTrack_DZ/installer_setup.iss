@@ -11,6 +11,11 @@ Compression=lzma
 SolidCompression=yes
 WizardStyle=modern
 
+VersionInfoVersion=1.0.0.0
+VersionInfoCompany=Direction des Transmissions Nationales
+VersionInfoDescription=MissionTrack DZ Installer
+VersionInfoCopyright=Copyright (C) 2026
+
 [Languages]
 Name: "arabic"; MessagesFile: "compiler:Languages\Arabic.isl"
 Name: "english"; MessagesFile: "compiler:Default.isl"

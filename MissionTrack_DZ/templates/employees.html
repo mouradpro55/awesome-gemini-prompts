@@ -110,6 +110,7 @@ function editEmployee(id, name, rank, job, index, category, workplace, bank_type
     document.getElementById('workplace').value = workplace !== 'None' ? workplace : '';
     document.getElementById('bank_type').value = bank_type;
     document.getElementById('bank_account').value = bank_account !== 'None' ? bank_account : '';
+    document.getElementById('is_high_rank').checked = (is_high_rank == 1 || is_high_rank === '1' || is_high_rank === 'True');
 
     window.scrollTo(0, 0);
 }

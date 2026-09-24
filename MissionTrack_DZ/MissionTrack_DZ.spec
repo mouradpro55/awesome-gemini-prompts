@@ -9,7 +9,7 @@ a = Analysis(
         ('Template.xlsx', '.'),
         ('templates', 'templates')
     ],
-    hiddenimports=['webview', 'engineio.async_drivers.threading'],
+    hiddenimports=['webview', 'engineio.async_drivers.threading', 'docx'],
     hookspath=[],
     hooksconfig={},
     runtime_hooks=[],
@@ -25,6 +25,7 @@ exe = EXE(
     [],
     exclude_binaries=True,
     name='MissionTrack_DZ',
+    version='version_info.txt',
     debug=False,
     bootloader_ignore_signals=False,
     strip=False,
@@ -44,4 +45,5 @@ coll = COLLECT(
     upx=True,
     upx_exclude=[],
     name='MissionTrack_DZ',
+    version='version_info.txt',
 )
