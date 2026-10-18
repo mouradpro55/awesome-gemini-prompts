@@ -13,7 +13,7 @@ import (
 
 func CreateElementsTab() fyne.CanvasObject {
 	input := widget.NewMultiLineEntry()
-	input.SetPlaceHolder("أدخل النص لتحليل الطبائع...")
+	input.SetPlaceHolder(ShapeArabic("أدخل النص لتحليل الطبائع..."))
 	input.Wrapping = fyne.TextWrapWord
 
 	fireBar := widget.NewProgressBar()
@@ -21,9 +21,9 @@ func CreateElementsTab() fyne.CanvasObject {
 	airBar := widget.NewProgressBar()
 	waterBar := widget.NewProgressBar()
 
-	dominantLabel := widget.NewLabel("الطبع الغالب: غير محدد")
+	dominantLabel := widget.NewLabel(ShapeArabic("الطبع الغالب: غير محدد"))
 
-	calcBtn := widget.NewButton("تحليل التوازن", func() {
+	calcBtn := widget.NewButton(ShapeArabic("تحليل التوازن"), func() {
 		text := input.Text
 		opts := nlp.ProcessOptions{UnifyHamzat: true, ExpandShaddah: false}
 		cleanText := nlp.CleanAndNormalize(text, opts)
@@ -45,19 +45,19 @@ func CreateElementsTab() fyne.CanvasObject {
 
 		domAr := ""
 		switch dominant {
-		case "fire": domAr = "ناري"
-		case "earth": domAr = "ترابي"
-		case "air": domAr = "هوائي"
-		case "water": domAr = "مائي"
+		case "fire": domAr = ShapeArabic("ناري")
+		case "earth": domAr = ShapeArabic("ترابي")
+		case "air": domAr = ShapeArabic("هوائي")
+		case "water": domAr = ShapeArabic("مائي")
 		}
-		dominantLabel.SetText(fmt.Sprintf("الطبع الغالب: %s", domAr))
+		dominantLabel.SetText(fmt.Sprintf("%s: %s", ShapeArabic("الطبع الغالب"), domAr))
 	})
 
 	resultsContainer := container.NewVBox(
-		container.NewHBox(widget.NewLabel("ناري:"), fireBar),
-		container.NewHBox(widget.NewLabel("ترابي:"), earthBar),
-		container.NewHBox(widget.NewLabel("هوائي:"), airBar),
-		container.NewHBox(widget.NewLabel("مائي:"), waterBar),
+		container.NewHBox(widget.NewLabel(ShapeArabic("ناري:")), fireBar),
+		container.NewHBox(widget.NewLabel(ShapeArabic("ترابي:")), earthBar),
+		container.NewHBox(widget.NewLabel(ShapeArabic("هوائي:")), airBar),
+		container.NewHBox(widget.NewLabel(ShapeArabic("مائي:")), waterBar),
 		dominantLabel,
 	)
 

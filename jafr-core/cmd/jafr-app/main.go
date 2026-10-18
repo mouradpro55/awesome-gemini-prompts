@@ -46,13 +46,13 @@ func main() {
 	a := app.New()
 	a.Settings().SetTheme(&ui.JafrTheme{})
 
-	w := a.NewWindow("محرك حساب الجفر والتحليل القرآني - JafrCore Engine")
+	w := a.NewWindow(ui.ShapeArabic("محرك حساب الجفر والتحليل القرآني - JafrCore Engine"))
 	w.Resize(fyne.NewSize(800, 600))
 
 	tabs := container.NewAppTabs(
-		container.NewTabItem("حاسبة النصوص", ui.CreateFreeTextTab()),
-		container.NewTabItem("ميزان الطبائع", ui.CreateElementsTab()),
-		container.NewTabItem("البحث القرآني العكسي", ui.CreateQuranTab(repo)),
+		container.NewTabItem(ui.ShapeArabic("حاسبة النصوص"), ui.CreateFreeTextTab()),
+		container.NewTabItem(ui.ShapeArabic("ميزان الطبائع"), ui.CreateElementsTab()),
+		container.NewTabItem(ui.ShapeArabic("البحث القرآني العكسي"), ui.CreateQuranTab(repo)),
 	)
 
 	w.SetContent(tabs)

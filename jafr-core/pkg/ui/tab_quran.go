@@ -19,7 +19,7 @@ import (
 
 func CreateQuranTab(repo *quran.Repository) fyne.CanvasObject {
 	input := widget.NewEntry()
-	input.SetPlaceHolder("أدخل الوزن العددي (مثال: 110)...")
+	input.SetPlaceHolder(ShapeArabic("أدخل الوزن العددي (مثال: 110)..."))
 
 	var resultsData []quran.AyahSearchResult
 
@@ -37,18 +37,18 @@ func CreateQuranTab(repo *quran.Repository) fyne.CanvasObject {
 			ayah := resultsData[i.Row]
 			switch i.Col {
 			case 0:
-				label.SetText(ayah.SurahName)
+				label.SetText(ShapeArabic(ayah.SurahName))
 			case 1:
 				label.SetText(fmt.Sprintf("%d", ayah.AyahNumber))
 			case 2:
-				label.SetText(ayah.TextTashkeel)
+				label.SetText(ShapeArabic(ayah.TextTashkeel))
 			case 3:
 				domAr := ""
 				switch ayah.DominantElement {
-				case "fire": domAr = "ناري"
-				case "earth": domAr = "ترابي"
-				case "air": domAr = "هوائي"
-				case "water": domAr = "مائي"
+				case "fire": domAr = ShapeArabic("ناري")
+				case "earth": domAr = ShapeArabic("ترابي")
+				case "air": domAr = ShapeArabic("هوائي")
+				case "water": domAr = ShapeArabic("مائي")
 				}
 				label.SetText(domAr)
 			}
@@ -60,13 +60,13 @@ func CreateQuranTab(repo *quran.Repository) fyne.CanvasObject {
 	list.SetColumnWidth(3, 80)
 
 	headers := container.NewGridWithColumns(4,
-		widget.NewLabelWithStyle("السورة", fyne.TextAlignCenter, fyne.TextStyle{Bold: true}),
-		widget.NewLabelWithStyle("الآية", fyne.TextAlignCenter, fyne.TextStyle{Bold: true}),
-		widget.NewLabelWithStyle("النص", fyne.TextAlignCenter, fyne.TextStyle{Bold: true}),
-		widget.NewLabelWithStyle("الطبع", fyne.TextAlignCenter, fyne.TextStyle{Bold: true}),
+		widget.NewLabelWithStyle(ShapeArabic("السورة"), fyne.TextAlignCenter, fyne.TextStyle{Bold: true}),
+		widget.NewLabelWithStyle(ShapeArabic("الآية"), fyne.TextAlignCenter, fyne.TextStyle{Bold: true}),
+		widget.NewLabelWithStyle(ShapeArabic("النص"), fyne.TextAlignCenter, fyne.TextStyle{Bold: true}),
+		widget.NewLabelWithStyle(ShapeArabic("الطبع"), fyne.TextAlignCenter, fyne.TextStyle{Bold: true}),
 	)
 
-	searchBtn := widget.NewButton("بحث عكسي", func() {
+	searchBtn := widget.NewButton(ShapeArabic("بحث عكسي"), func() {
 		val, err := strconv.Atoi(input.Text)
 		if err == nil {
 			res, err := repo.SearchByJummalEast(val)
@@ -77,9 +77,9 @@ func CreateQuranTab(repo *quran.Repository) fyne.CanvasObject {
 		}
 	})
 
-	exportBtn := widget.NewButton("تصدير النتائج (CSV/JSON)", func() {
+	exportBtn := widget.NewButton(ShapeArabic("تصدير النتائج (CSV/JSON)"), func() {
 		if len(resultsData) == 0 {
-			dialog.ShowInformation("تنبيه", "لا توجد نتائج لتصديرها", fyne.CurrentApp().Driver().AllWindows()[0])
+			dialog.ShowInformation(ShapeArabic("تنبيه"), ShapeArabic("لا توجد نتائج لتصديرها"), fyne.CurrentApp().Driver().AllWindows()[0])
 			return
 		}
 
@@ -118,7 +118,7 @@ func CreateQuranTab(repo *quran.Repository) fyne.CanvasObject {
 			encoder.Encode(resultsData)
 		}
 
-		dialog.ShowInformation("تم التصدير", fmt.Sprintf("تم تصدير النتائج بنجاح إلى:\n%s\n%s", csvPath, jsonPath), fyne.CurrentApp().Driver().AllWindows()[0])
+		dialog.ShowInformation(ShapeArabic("تم التصدير"), ShapeArabic(fmt.Sprintf("تم تصدير النتائج بنجاح إلى:\n%s\n%s", csvPath, jsonPath)), fyne.CurrentApp().Driver().AllWindows()[0])
 	})
 
 	topContainer := container.NewVBox(input, container.NewHBox(searchBtn, exportBtn), headers)

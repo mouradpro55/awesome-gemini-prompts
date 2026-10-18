@@ -15,27 +15,28 @@ import (
 
 func CreateFreeTextTab() fyne.CanvasObject {
 	input := widget.NewMultiLineEntry()
-	input.SetPlaceHolder("أدخل النص العربي هنا...")
+	input.SetPlaceHolder(ShapeArabic("أدخل النص العربي هنا..."))
 	input.Wrapping = fyne.TextWrapWord
 
-	radio := widget.NewRadioGroup([]string{"القاعدة المشرقية", "القاعدة المغربية"}, nil)
-	radio.SetSelected("القاعدة المشرقية")
+	radioChoices := []string{ShapeArabic("القاعدة المشرقية"), ShapeArabic("القاعدة المغربية")}
+	radio := widget.NewRadioGroup(radioChoices, nil)
+	radio.SetSelected(radioChoices[0])
 	radio.Horizontal = true
 
-	checkHamzat := widget.NewCheck("توحيد الهمزات", nil)
+	checkHamzat := widget.NewCheck(ShapeArabic("توحيد الهمزات"), nil)
 	checkHamzat.SetChecked(true)
 
-	checkShaddah := widget.NewCheck("فك الشدة", nil)
+	checkShaddah := widget.NewCheck(ShapeArabic("فك الشدة"), nil)
 	checkShaddah.SetChecked(false)
 
-	resultEast := canvas.NewText("الجُمّل الكبير: 0", color.White)
+	resultEast := canvas.NewText(ShapeArabic("الجُمّل الكبير: 0"), color.White)
 	resultEast.TextSize = 16
-	resultSaghir := canvas.NewText("الجُمّل الصغير: 0", color.White)
+	resultSaghir := canvas.NewText(ShapeArabic("الجُمّل الصغير: 0"), color.White)
 	resultSaghir.TextSize = 16
-	resultBast := canvas.NewText("حساب البسط المفرود: 0", color.White)
+	resultBast := canvas.NewText(ShapeArabic("حساب البسط المفرود: 0"), color.White)
 	resultBast.TextSize = 16
 
-	calcBtn := widget.NewButton("حساب وتحليل", func() {
+	calcBtn := widget.NewButton(ShapeArabic("حساب وتحليل"), func() {
 		text := input.Text
 		opts := nlp.ProcessOptions{
 			UnifyHamzat:   checkHamzat.Checked,
@@ -44,7 +45,7 @@ func CreateFreeTextTab() fyne.CanvasObject {
 		cleanText := nlp.CleanAndNormalize(text, opts)
 
 		cType := engine.East
-		if radio.Selected == "القاعدة المغربية" {
+		if radio.Selected == ShapeArabic("القاعدة المغربية") {
 			cType = engine.West
 		}
 
@@ -52,9 +53,9 @@ func CreateFreeTextTab() fyne.CanvasObject {
 		saghir := engine.DigitalRoot(macro)
 		bast := engine.BastExtendedValue(cleanText, cType)
 
-		resultEast.Text = fmt.Sprintf("الجُمّل الكبير: %d", macro)
-		resultSaghir.Text = fmt.Sprintf("الجُمّل الصغير: %d", saghir)
-		resultBast.Text = fmt.Sprintf("حساب البسط المفرود: %d", bast)
+		resultEast.Text = ShapeArabic(fmt.Sprintf("الجُمّل الكبير: %d", macro))
+		resultSaghir.Text = ShapeArabic(fmt.Sprintf("الجُمّل الصغير: %d", saghir))
+		resultBast.Text = ShapeArabic(fmt.Sprintf("حساب البسط المفرود: %d", bast))
 
 		resultEast.Refresh()
 		resultSaghir.Refresh()
