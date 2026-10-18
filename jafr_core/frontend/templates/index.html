@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>محرك حساب الجفر والتحليل القرآني - JafrCore Engine</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;800&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Cairo', 'sans-serif'],
+                    },
+                    colors: {
+                        dark: '#0D0F18',
+                        darker: '#08090f',
+                        primary: '#FFB800',
+                        glass: 'rgba(22, 27, 46, 0.7)',
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body { background-color: theme('colors.darker'); color: #F0F3F6; }
+        .glass-panel {
+            background: theme('colors.glass');
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        .tab-btn.active {
+            border-bottom: 2px solid theme('colors.primary');
+            color: theme('colors.primary');
+        }
+    </style>
+</head>
+<body class="min-h-screen p-6 font-sans antialiased text-lg">
+    <div class="max-w-5xl mx-auto">
+        <h1 class="text-3xl font-bold mb-8 text-center text-primary">محرك حساب الجفر والتحليل القرآني</h1>
+
+        <!-- Tabs Navigation -->
+        <div class="flex border-b border-gray-700 mb-6">
+            <button class="tab-btn active flex-1 py-3 font-semibold text-xl" onclick="showTab('calc')">حاسبة النصوص</button>
+            <button class="tab-btn flex-1 py-3 font-semibold text-xl text-gray-400" onclick="showTab('elements')">ميزان الطبائع</button>
+            <button class="tab-btn flex-1 py-3 font-semibold text-xl text-gray-400" onclick="showTab('quran')">البحث القرآني العكسي</button>
+        </div>
+
+        <!-- Calculator Tab -->
+        <div id="tab-calc" class="tab-content">
+            <div class="glass-panel p-6 rounded-xl mb-6">
+                <textarea id="calcText" class="w-full bg-dark p-4 rounded-lg border border-gray-600 focus:border-primary outline-none resize-none mb-4" rows="5" placeholder="أدخل النص العربي هنا..."></textarea>
+
+                <div class="flex flex-wrap gap-6 mb-6">
+                    <div class="flex items-center gap-2">
+                        <input type="radio" id="ruleEast" name="rule" value="east" checked class="accent-primary w-5 h-5">
+                        <label for="ruleEast">القاعدة المشرقية</label>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <input type="radio" id="ruleWest" name="rule" value="west" class="accent-primary w-5 h-5">
+                        <label for="ruleWest">القاعدة المغربية</label>
+                    </div>
+                    <div class="flex items-center gap-2 mr-8">
+                        <input type="checkbox" id="unifyHamzat" checked class="accent-primary w-5 h-5">
+                        <label for="unifyHamzat">توحيد الهمزات</label>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <input type="checkbox" id="expandShaddah" class="accent-primary w-5 h-5">
+                        <label for="expandShaddah">فك الشدة</label>
+                    </div>
+                </div>
+
+                <button onclick="calculate()" class="bg-primary text-darker font-bold py-3 px-8 rounded-lg hover:bg-yellow-500 transition-colors w-full md:w-auto">حساب وتحليل</button>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div class="glass-panel p-6 rounded-xl text-center">
+                    <h3 class="text-gray-400 mb-2">الجُمّل الكبير</h3>
+                    <div id="resMacro" class="text-4xl font-bold text-white">0</div>
+                </div>
+                <div class="glass-panel p-6 rounded-xl text-center">
+                    <h3 class="text-gray-400 mb-2">الجُمّل الصغير</h3>
+                    <div id="resSaghir" class="text-4xl font-bold text-white">0</div>
+                </div>
+                <div class="glass-panel p-6 rounded-xl text-center">
+                    <h3 class="text-gray-400 mb-2">حساب البسط</h3>
+                    <div id="resBast" class="text-4xl font-bold text-white">0</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Elements Tab -->
+        <div id="tab-elements" class="tab-content hidden">
+            <div class="glass-panel p-6 rounded-xl mb-6">
+                <textarea id="elementsText" class="w-full bg-dark p-4 rounded-lg border border-gray-600 focus:border-primary outline-none resize-none mb-4" rows="4" placeholder="أدخل النص لتحليل الطبائع..."></textarea>
+                <button onclick="calcElements()" class="bg-primary text-darker font-bold py-3 px-8 rounded-lg hover:bg-yellow-500 transition-colors">تحليل التوازن</button>
+            </div>
+
+            <div class="glass-panel p-6 rounded-xl">
+                <h3 id="dominantLabel" class="text-2xl font-bold mb-6 text-center text-primary">الطبع الغالب: غير محدد</h3>
+
+                <div class="space-y-4">
+                    <div class="flex items-center gap-4">
+                        <div class="w-20 font-semibold text-red-500">ناري</div>
+                        <div class="flex-1 bg-dark rounded-full h-4 overflow-hidden">
+                            <div id="barFire" class="bg-red-500 h-full" style="width: 0%"></div>
+                        </div>
+                        <div id="pctFire" class="w-16 text-left">0%</div>
+                    </div>
+                    <div class="flex items-center gap-4">
+                        <div class="w-20 font-semibold text-yellow-500">ترابي</div>
+                        <div class="flex-1 bg-dark rounded-full h-4 overflow-hidden">
+                            <div id="barEarth" class="bg-yellow-500 h-full" style="width: 0%"></div>
+                        </div>
+                        <div id="pctEarth" class="w-16 text-left">0%</div>
+                    </div>
+                    <div class="flex items-center gap-4">
+                        <div class="w-20 font-semibold text-blue-400">هوائي</div>
+                        <div class="flex-1 bg-dark rounded-full h-4 overflow-hidden">
+                            <div id="barAir" class="bg-blue-400 h-full" style="width: 0%"></div>
+                        </div>
+                        <div id="pctAir" class="w-16 text-left">0%</div>
+                    </div>
+                    <div class="flex items-center gap-4">
+                        <div class="w-20 font-semibold text-emerald-500">مائي</div>
+                        <div class="flex-1 bg-dark rounded-full h-4 overflow-hidden">
+                            <div id="barWater" class="bg-emerald-500 h-full" style="width: 0%"></div>
+                        </div>
+                        <div id="pctWater" class="w-16 text-left">0%</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Quran Search Tab -->
+        <div id="tab-quran" class="tab-content hidden">
+            <div class="glass-panel p-6 rounded-xl mb-6">
+                <div class="flex flex-col md:flex-row gap-4 mb-4">
+                    <input type="number" id="quranValue" class="flex-1 bg-dark p-4 rounded-lg border border-gray-600 focus:border-primary outline-none" placeholder="أدخل الوزن العددي (مثال: 110)...">
+                    <select id="quranRule" class="bg-dark p-4 rounded-lg border border-gray-600 focus:border-primary outline-none">
+                        <option value="east">القاعدة المشرقية</option>
+                        <option value="west">القاعدة المغربية</option>
+                    </select>
+                    <button onclick="searchQuran()" class="bg-primary text-darker font-bold py-3 px-8 rounded-lg hover:bg-yellow-500 transition-colors">بحث في الآيات</button>
+                    <button onclick="exportCSV()" class="bg-transparent border-2 border-primary text-primary font-bold py-3 px-6 rounded-lg hover:bg-primary hover:text-darker transition-colors">تصدير CSV</button>
+                </div>
+            </div>
+
+            <div class="glass-panel rounded-xl overflow-hidden">
+                <div class="overflow-x-auto">
+                    <table class="w-full text-right border-collapse">
+                        <thead class="bg-dark">
+                            <tr>
+                                <th class="p-4 border-b border-gray-700 w-1/6">السورة</th>
+                                <th class="p-4 border-b border-gray-700 w-1/12">الآية</th>
+                                <th class="p-4 border-b border-gray-700 w-1/2">النص القرآني</th>
+                                <th class="p-4 border-b border-gray-700 w-1/6">الطبع الغالب</th>
+                            </tr>
+                        </thead>
+                        <tbody id="quranResults" class="divide-y divide-gray-700">
+                            <tr><td colspan="4" class="p-8 text-center text-gray-500">لا توجد نتائج للعرض.</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        const arElem = { 'fire': 'ناري', 'earth': 'ترابي', 'air': 'هوائي', 'water': 'مائي' };
+        let currentQuranResults = [];
+
+        function showTab(tabId) {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+            document.getElementById('tab-' + tabId).classList.remove('hidden');
+
+            document.querySelectorAll('.tab-btn').forEach(el => {
+                el.classList.remove('active', 'text-primary', 'border-primary');
+                el.classList.add('text-gray-400');
+                el.style.borderBottom = 'none';
+            });
+
+            const btn = event.target || document.querySelector(`.tab-btn[onclick="showTab('${tabId}')"]`);
+            btn.classList.add('active', 'text-primary');
+            btn.classList.remove('text-gray-400');
+            btn.style.borderBottom = '2px solid #FFB800';
+        }
+
+        async function calculate() {
+            const res = await fetch('/api/calculate', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({
+                    text: document.getElementById('calcText').value,
+                    rule: document.querySelector('input[name="rule"]:checked').value,
+                    unify_hamzat: document.getElementById('unifyHamzat').checked,
+                    expand_shaddah: document.getElementById('expandShaddah').checked
+                })
+            });
+            const data = await res.json();
+            document.getElementById('resMacro').innerText = data.macro;
+            document.getElementById('resSaghir').innerText = data.saghir;
+            document.getElementById('resBast').innerText = data.bast;
+        }
+
+        async function calcElements() {
+            const res = await fetch('/api/elements', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({ text: document.getElementById('elementsText').value })
+            });
+            const data = await res.json();
+
+            document.getElementById('dominantLabel').innerText = `الطبع الغالب: ${arElem[data.dominant] || 'غير محدد'}`;
+
+            for (let e of ['fire', 'earth', 'air', 'water']) {
+                const p = Math.round(data.percentages[e]);
+                document.getElementById(`bar${e.charAt(0).toUpperCase() + e.slice(1)}`).style.width = p + '%';
+                document.getElementById(`pct${e.charAt(0).toUpperCase() + e.slice(1)}`).innerText = p + '%';
+            }
+        }
+
+        async function searchQuran() {
+            const tbody = document.getElementById('quranResults');
+            tbody.innerHTML = '<tr><td colspan="4" class="p-8 text-center">جاري البحث...</td></tr>';
+
+            const res = await fetch('/api/search_quran', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({
+                    value: document.getElementById('quranValue').value,
+                    rule: document.getElementById('quranRule').value
+                })
+            });
+            const data = await res.json();
+            currentQuranResults = data.results;
+
+            if (data.results.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="4" class="p-8 text-center text-gray-500">لا توجد نتائج تطابق هذا الوزن.</td></tr>';
+                return;
+            }
+
+            tbody.innerHTML = '';
+            data.results.forEach(row => {
+                const tr = document.createElement('tr');
+                tr.className = 'hover:bg-gray-800 transition-colors';
+                tr.innerHTML = `
+                    <td class="p-4 font-semibold">${row.surah_name}</td>
+                    <td class="p-4 text-gray-400">${row.ayah_number}</td>
+                    <td class="p-4 text-lg font-amiri leading-relaxed">${row.text_tashkeel}</td>
+                    <td class="p-4">${arElem[row.dominant_element]}</td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        function exportCSV() {
+            if (currentQuranResults.length === 0) {
+                alert("لا توجد نتائج لتصديرها.");
+                return;
+            }
+
+            let csv = '\uFEFF'; // BOM for Arabic Excel
+            csv += "السورة,الآية,النص,الطبع الغالب,الجُمّل\n";
+            currentQuranResults.forEach(r => {
+                const text = `"${r.text_tashkeel.replace(/"/g, '""')}"`;
+                csv += `${r.surah_name},${r.ayah_number},${text},${arElem[r.dominant_element]},${r.jummal_value}\n`;
+            });
+
+            const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement("a");
+            const url = URL.createObjectURL(blob);
+            link.setAttribute("href", url);
+            link.setAttribute("download", `quran_results_${Date.now()}.csv`);
+            link.style.visibility = 'hidden';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+    </script>
+</body>
+</html>
