@@ -12,12 +12,16 @@ type Repository struct {
 }
 
 func NewRepository(dbPath string) (*Repository, error) {
-	// Ensure the db directory exists
-	// In reality we should check if file exists, if not, parse and create it.
 	db, err := sql.Open("sqlite", dbPath)
 	if err != nil {
 		return nil, err
 	}
+
+	// Optimize SQLite speed for bulk ingestion
+	_, _ = db.Exec("PRAGMA synchronous = OFF;")
+	_, _ = db.Exec("PRAGMA journal_mode = MEMORY;")
+	_, _ = db.Exec("PRAGMA temp_store = MEMORY;")
+	_, _ = db.Exec("PRAGMA cache_size = -64000;") // 64MB cache
 
 	repo := &Repository{db: db}
 	if err := repo.InitSchema(); err != nil {

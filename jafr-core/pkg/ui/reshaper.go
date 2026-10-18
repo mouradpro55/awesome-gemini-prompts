@@ -1,10 +1,5 @@
 package ui
 
-import (
-	"strings"
-	"unicode"
-)
-
 var arabicForms = map[rune][4]rune{
 	'ا': {0xFE8D, 0xFE8E, 0xFE8D, 0xFE8E},
 	'أ': {0xFE83, 0xFE84, 0xFE83, 0xFE84},
@@ -57,24 +52,15 @@ func isArabicRune(r rune) bool {
 	return ok
 }
 
-func hasArabic(s string) bool {
-	for _, r := range s {
-		if isArabicRune(r) {
-			return true
-		}
-	}
-	return false
-}
-
-func shapeWord(w string) string {
-	runes := []rune(w)
-	n := len(runes)
-	if n == 0 {
+// ShapeArabic joins contextual Arabic letters without reversing word order.
+func ShapeArabic(text string) string {
+	if text == "" {
 		return ""
 	}
 
+	runes := []rune(text)
+	n := len(runes)
 	shaped := make([]rune, n)
-	isAr := false
 
 	for i := 0; i < n; i++ {
 		r := runes[i]
@@ -83,7 +69,7 @@ func shapeWord(w string) string {
 			shaped[i] = r
 			continue
 		}
-		isAr = true
+
 		prevConnects := i > 0 && isArabicRune(runes[i-1]) && !isNonConnector(runes[i-1])
 		nextConnects := i < n-1 && isArabicRune(runes[i+1])
 
@@ -98,48 +84,5 @@ func shapeWord(w string) string {
 		}
 	}
 
-	// Reverse character order inside Arabic words so Fyne's LTR engine renders RTL correctly
-	if isAr {
-		for i, j := 0, n-1; i < j; i, j = i+1, j-1 {
-			shaped[i], shaped[j] = shaped[j], shaped[i]
-		}
-	}
-
 	return string(shaped)
-}
-
-// ShapeArabic shapes glyphs and handles RTL reordering for mixed lines
-func ShapeArabic(text string) string {
-	if text == "" {
-		return ""
-	}
-
-	lines := strings.Split(text, "\n")
-	var resLines []string
-
-	for _, line := range lines {
-		if !hasArabic(line) {
-			resLines = append(resLines, line)
-			continue
-		}
-
-		// Split preserving spaces and tokens
-		words := strings.FieldsFunc(line, func(c rune) bool {
-			return unicode.IsSpace(c)
-		})
-
-		var processed []string
-		for _, w := range words {
-			processed = append(processed, shapeWord(w))
-		}
-
-		// Reverse word order in the line to preserve RTL flow
-		for i, j := 0, len(processed)-1; i < j; i, j = i+1, j-1 {
-			processed[i], processed[j] = processed[j], processed[i]
-		}
-
-		resLines = append(resLines, strings.Join(processed, " "))
-	}
-
-	return strings.Join(resLines, "\n")
 }
