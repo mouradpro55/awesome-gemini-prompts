@@ -54,9 +54,15 @@ func (m JafrTheme) Icon(name fyne.ThemeIconName) fyne.Resource {
 func (m JafrTheme) Size(name fyne.ThemeSizeName) float32 {
 	switch name {
 	case theme.SizeNameText:
-		return 14.0
+		return 18.0 // Increased from 14.0 for crystal clear Arabic readability
 	case theme.SizeNameHeadingText:
+		return 24.0 // Prominent section titles
+	case theme.SizeNameSubHeadingText:
 		return 20.0
+	case theme.SizeNameCaptionText:
+		return 15.0
+	case theme.SizeNamePadding:
+		return 8.0
 	default:
 		return theme.DefaultTheme().Size(name)
 	}

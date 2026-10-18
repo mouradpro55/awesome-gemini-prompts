@@ -30,11 +30,11 @@ func CreateFreeTextTab() fyne.CanvasObject {
 	checkShaddah.SetChecked(false)
 
 	resultEast := canvas.NewText(ShapeArabic("الجُمّل الكبير: 0"), color.White)
-	resultEast.TextSize = 16
+	resultEast.TextSize = 20
 	resultSaghir := canvas.NewText(ShapeArabic("الجُمّل الصغير: 0"), color.White)
-	resultSaghir.TextSize = 16
+	resultSaghir.TextSize = 20
 	resultBast := canvas.NewText(ShapeArabic("حساب البسط المفرود: 0"), color.White)
-	resultBast.TextSize = 16
+	resultBast.TextSize = 20
 
 	calcBtn := widget.NewButton(ShapeArabic("حساب وتحليل"), func() {
 		text := input.Text
@@ -53,9 +53,9 @@ func CreateFreeTextTab() fyne.CanvasObject {
 		saghir := engine.DigitalRoot(macro)
 		bast := engine.BastExtendedValue(cleanText, cType)
 
-		resultEast.Text = ShapeArabic(fmt.Sprintf("الجُمّل الكبير: %d", macro))
-		resultSaghir.Text = ShapeArabic(fmt.Sprintf("الجُمّل الصغير: %d", saghir))
-		resultBast.Text = ShapeArabic(fmt.Sprintf("حساب البسط المفرود: %d", bast))
+		resultEast.Text = fmt.Sprintf("%s: %d", ShapeArabic("الجُمّل الكبير"), macro)
+		resultSaghir.Text = fmt.Sprintf("%s: %d", ShapeArabic("الجُمّل الصغير"), saghir)
+		resultBast.Text = fmt.Sprintf("%s: %d", ShapeArabic("حساب البسط المفرود"), bast)
 
 		resultEast.Refresh()
 		resultSaghir.Refresh()

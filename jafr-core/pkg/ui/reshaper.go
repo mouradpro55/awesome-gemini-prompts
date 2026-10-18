@@ -5,7 +5,6 @@ import (
 	"unicode"
 )
 
-// Arabic Presentation Forms-B mapping: [isolated, final, initial, medial]
 var arabicForms = map[rune][4]rune{
 	'ا': {0xFE8D, 0xFE8E, 0xFE8D, 0xFE8E},
 	'أ': {0xFE83, 0xFE84, 0xFE83, 0xFE84},
@@ -53,73 +52,94 @@ func isNonConnector(r rune) bool {
 	return false
 }
 
-func isArabic(r rune) bool {
+func isArabicRune(r rune) bool {
 	_, ok := arabicForms[r]
 	return ok
 }
 
-// ShapeArabic connects letters according to contextual position and reverses order for BiDi LTR renderers
+func hasArabic(s string) bool {
+	for _, r := range s {
+		if isArabicRune(r) {
+			return true
+		}
+	}
+	return false
+}
+
+func shapeWord(w string) string {
+	runes := []rune(w)
+	n := len(runes)
+	if n == 0 {
+		return ""
+	}
+
+	shaped := make([]rune, n)
+	isAr := false
+
+	for i := 0; i < n; i++ {
+		r := runes[i]
+		forms, ok := arabicForms[r]
+		if !ok {
+			shaped[i] = r
+			continue
+		}
+		isAr = true
+		prevConnects := i > 0 && isArabicRune(runes[i-1]) && !isNonConnector(runes[i-1])
+		nextConnects := i < n-1 && isArabicRune(runes[i+1])
+
+		if prevConnects && nextConnects {
+			shaped[i] = forms[3] // medial
+		} else if prevConnects {
+			shaped[i] = forms[1] // final
+		} else if nextConnects {
+			shaped[i] = forms[2] // initial
+		} else {
+			shaped[i] = forms[0] // isolated
+		}
+	}
+
+	// Reverse character order inside Arabic words so Fyne's LTR engine renders RTL correctly
+	if isAr {
+		for i, j := 0, n-1; i < j; i, j = i+1, j-1 {
+			shaped[i], shaped[j] = shaped[j], shaped[i]
+		}
+	}
+
+	return string(shaped)
+}
+
+// ShapeArabic shapes glyphs and handles RTL reordering for mixed lines
 func ShapeArabic(text string) string {
 	if text == "" {
 		return ""
 	}
 
 	lines := strings.Split(text, "\n")
-	var reshapedLines []string
+	var resLines []string
 
 	for _, line := range lines {
+		if !hasArabic(line) {
+			resLines = append(resLines, line)
+			continue
+		}
+
+		// Split preserving spaces and tokens
 		words := strings.FieldsFunc(line, func(c rune) bool {
 			return unicode.IsSpace(c)
 		})
 
-		if len(words) == 0 {
-			reshapedLines = append(reshapedLines, "")
-			continue
-		}
-
-		var shapedWords []string
+		var processed []string
 		for _, w := range words {
-			runes := []rune(w)
-			n := len(runes)
-			shaped := make([]rune, n)
-
-			for i := 0; i < n; i++ {
-				r := runes[i]
-				forms, ok := arabicForms[r]
-				if !ok {
-					shaped[i] = r
-					continue
-				}
-
-				prevConnects := i > 0 && isArabic(runes[i-1]) && !isNonConnector(runes[i-1])
-				nextConnects := i < n-1 && isArabic(runes[i+1])
-
-				if prevConnects && nextConnects {
-					shaped[i] = forms[3] // medial
-				} else if prevConnects {
-					shaped[i] = forms[1] // final
-				} else if nextConnects {
-					shaped[i] = forms[2] // initial
-				} else {
-					shaped[i] = forms[0] // isolated
-				}
-			}
-
-			// Reverse character order inside word for RTL display
-			for i, j := 0, n-1; i < j; i, j = i+1, j-1 {
-				shaped[i], shaped[j] = shaped[j], shaped[i]
-			}
-			shapedWords = append(shapedWords, string(shaped))
+			processed = append(processed, shapeWord(w))
 		}
 
-		// Reverse word order in the line
-		for i, j := 0, len(shapedWords)-1; i < j; i, j = i+1, j-1 {
-			shapedWords[i], shapedWords[j] = shapedWords[j], shapedWords[i]
+		// Reverse word order in the line to preserve RTL flow
+		for i, j := 0, len(processed)-1; i < j; i, j = i+1, j-1 {
+			processed[i], processed[j] = processed[j], processed[i]
 		}
 
-		// Join with space
-		reshapedLines = append(reshapedLines, strings.Join(shapedWords, " "))
+		resLines = append(resLines, strings.Join(processed, " "))
 	}
 
-	return strings.Join(reshapedLines, "\n")
+	return strings.Join(resLines, "\n")
 }
