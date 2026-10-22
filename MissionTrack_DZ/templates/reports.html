@@ -1,0 +1,59 @@
+{% extends 'base.html' %}
+{% block content %}
+<h2 class="text-3xl font-bold mb-6 text-slate-800">التقارير والإحصائيات</h2>
+
+<!-- Department Stats Table -->
+<div class="bg-white rounded-lg shadow overflow-x-auto mb-8">
+    <h3 class="text-xl font-bold p-4 bg-gray-50 border-b">إحصائيات حسب المصلحة</h3>
+    <table class="min-w-full leading-normal">
+        <thead>
+            <tr>
+                <th class="px-5 py-3 border-b-2 bg-gray-100 text-right text-xs font-semibold text-gray-600">المصلحة</th>
+                <th class="px-5 py-3 border-b-2 bg-gray-100 text-right text-xs font-semibold text-gray-600">عدد المهمات</th>
+                <th class="px-5 py-3 border-b-2 bg-gray-100 text-right text-xs font-semibold text-gray-600">الوجبات</th>
+                <th class="px-5 py-3 border-b-2 bg-gray-100 text-right text-xs font-semibold text-gray-600">المبيتات</th>
+                <th class="px-5 py-3 border-b-2 bg-gray-100 text-right text-xs font-semibold text-gray-600">إجمالي النفقات</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for d in dept_stats %}
+            <tr>
+                <td class="px-5 py-5 border-b text-sm font-bold">{{ d['department'] if d['department'] else 'غير محدد' }}</td>
+                <td class="px-5 py-5 border-b text-sm">{{ d['total_missions'] }}</td>
+                <td class="px-5 py-5 border-b text-sm">{{ d['total_meals'] }}</td>
+                <td class="px-5 py-5 border-b text-sm">{{ d['total_nights'] }}</td>
+                <td class="px-5 py-5 border-b text-sm font-bold text-green-700">{{ d['total_spent'] }} دج</td>
+            </tr>
+            {% endfor %}
+            {% if not dept_stats %}
+            <tr><td colspan="5" class="p-4 text-center text-gray-500">لا توجد بيانات متاحة.</td></tr>
+            {% endif %}
+        </tbody>
+    </table>
+</div>
+
+<!-- Employee Stats Table -->
+<div class="bg-white rounded-lg shadow overflow-x-auto">
+    <h3 class="text-xl font-bold p-4 bg-gray-50 border-b">إحصائيات حسب الموظف</h3>
+    <table class="min-w-full leading-normal">
+        <thead>
+            <tr>
+                <th class="px-5 py-3 border-b-2 bg-gray-100 text-right text-xs font-semibold text-gray-600">الموظف</th>
+                <th class="px-5 py-3 border-b-2 bg-gray-100 text-right text-xs font-semibold text-gray-600">المصلحة</th>
+                <th class="px-5 py-3 border-b-2 bg-gray-100 text-right text-xs font-semibold text-gray-600">المهمات</th>
+                <th class="px-5 py-3 border-b-2 bg-gray-100 text-right text-xs font-semibold text-gray-600">النفقات المستهلكة</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for e in emp_stats %}
+            <tr>
+                <td class="px-5 py-5 border-b text-sm font-bold">{{ e['full_name'] }}</td>
+                <td class="px-5 py-5 border-b text-sm">{{ e['department'] if e['department'] else 'غير محدد' }}</td>
+                <td class="px-5 py-5 border-b text-sm">{{ e['total_missions'] }}</td>
+                <td class="px-5 py-5 border-b text-sm font-bold text-green-700">{{ e['total_spent'] if e['total_spent'] else 0 }} دج</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

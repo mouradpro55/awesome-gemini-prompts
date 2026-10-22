@@ -1,0 +1,7 @@
+Flask
+reportlab
+openpyxl
+pyinstaller
+arabic-reshaper
+python-bidi
+webview
