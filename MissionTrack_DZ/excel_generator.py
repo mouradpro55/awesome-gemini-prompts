@@ -23,14 +23,16 @@ def generate_excel_report(employee, missions, output_path, tafqeet_text):
         cell.value = val
         return cell
 
+
     # 1. Fill Employee Info
     safe_write("C11", employee['full_name'])
     safe_write("G11", missions[0]['report_month_year'] if missions and len(missions) > 0 else "")
     safe_write("C12", employee['rank'])
-    safe_write("G12", f"=C12")
+    safe_write("G12", employee['job_title']) # Replaced formula with job_title
     safe_write("C14", employee['index_number'])
     safe_write("G14", employee['category'])
     safe_write("C15", employee['workplace'])
+    safe_write("G15", employee['department']) # Added department to G15 based on standard templates
     safe_write("G16", employee['bank_account'])
 
     total_n_meals = 0
@@ -57,11 +59,11 @@ def generate_excel_report(employee, missions, output_path, tafqeet_text):
             total_s_nights += s_nights
 
         try:
-            dep_parts = m['departure_datetime'].split(' ')
+            dep_parts = str(m['departure_datetime']).split(' ')
             dep_date = dep_parts[0]
             dep_time = dep_parts[1] if len(dep_parts)>1 else ""
 
-            ret_parts = m['return_datetime'].split(' ')
+            ret_parts = str(m['return_datetime']).split(' ')
             ret_date = ret_parts[0]
             ret_time = ret_parts[1] if len(ret_parts)>1 else ""
         except:

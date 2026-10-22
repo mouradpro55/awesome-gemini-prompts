@@ -1,5 +1,4 @@
 from flask import Flask, render_template, request, redirect, url_for, jsonify, send_file
-import webbrowser
 import threading
 import os
 import database
@@ -7,6 +6,7 @@ from calculator import calculate_allowances
 from tafqeet import tafqeet
 from pdf_generator import generate_pdf_report
 from excel_generator import generate_excel_report
+import webview
 
 app = Flask(__name__)
 database.init_db()
@@ -67,7 +67,7 @@ def missions():
     emps = database.get_all_employees()
     selected_emp_id = request.args.get('emp_id')
     if not selected_emp_id and emps:
-        selected_emp_id = str(emps[0][0])
+        selected_emp_id = str(emps[0]['id'])
 
     if request.method == 'POST':
         action = request.form.get('action')
@@ -86,7 +86,7 @@ def missions():
             emp = None
             if selected_emp_id:
                 emp = database.get_employee(int(selected_emp_id))
-            cat = emp['category'] if emp and len(emp) > 5 else '1-10'
+            cat = emp['category'] if emp else '1-10'
 
             m_count, n_count, tot = calculate_allowances(dep, ret, reg, cat, dist)
             t_txt = tafqeet(tot)
@@ -138,24 +138,30 @@ def export_report(type, emp_id):
     if not emp or not missions_list:
         return "لا توجد بيانات أو مهمات لهذا الموظف لتصديرها", 404
 
-    # distance_km is 10, departure is 11, return is 12, meals 14, nights 15, amount 16
     grand_total = sum(m['total_amount'] for m in missions_list)
     tafqeet_text = tafqeet(grand_total)
 
+    # Save directly to user's downloads folder so pywebview can open it smoothly
+    downloads_folder = os.path.join(os.path.expanduser('~'), 'Downloads')
+
     if type == "pdf":
-        path = f"report_employee_{emp_id}.pdf"
+        path = os.path.join(downloads_folder, f"report_employee_{emp_id}.pdf")
         generate_pdf_report(emp, missions_list, path, tafqeet_text)
+        # return file path logic directly to pywebview or standard browser
         return send_file(path, as_attachment=True)
     elif type == "excel":
-        path = f"report_employee_{emp_id}.xlsx"
+        path = os.path.join(downloads_folder, f"report_employee_{emp_id}.xlsx")
         generate_excel_report(emp, missions_list, path, tafqeet_text)
         return send_file(path, as_attachment=True)
 
     return "Invalid type", 400
 
-def run_app():
-    app.run(port=5000, debug=False, use_reloader=False)
 
-if __name__ == '__main__':
-    threading.Timer(1.5, lambda: webbrowser.open("http://127.0.0.1:5000")).start()
-    run_app()
+@app.route('/reports')
+def reports():
+    emp_stats, dept_stats = database.get_reports()
+    return render_template('reports.html', emp_stats=emp_stats, dept_stats=dept_stats)
+
+def run_app():
+    # Flask Server
+    app.run(port=5000, debug=False, use_reloader=False)

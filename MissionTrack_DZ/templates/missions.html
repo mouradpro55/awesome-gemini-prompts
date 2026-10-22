@@ -24,19 +24,47 @@
         <input type="hidden" name="action" value="add">
         <input type="hidden" name="emp_id" value="{{ selected_emp_id }}">
 
+        <!-- Get Category from matched employee -->
+        {% set current_cat = '1-10' %}
+        {% for emp in employees %}
+            {% if emp['id']|string == selected_emp_id|string %}
+                {% set current_cat = emp['category'] %}
+            {% endif %}
+        {% endfor %}
+        <input type="hidden" id="emp_category" value="{{ current_cat }}">
+
         <div><label class="block text-gray-700 text-sm font-bold mb-2">رقم الأمر بمهمة</label><input type="text" name="order_number" class="w-full border p-2 rounded"></div>
         <div><label class="block text-gray-700 text-sm font-bold mb-2">تاريخ الأمر</label><input type="text" name="order_date" placeholder="15-05-2026" class="w-full border p-2 rounded"></div>
         <div><label class="block text-gray-700 text-sm font-bold mb-2">سبب التنقل</label><input type="text" name="purpose" class="w-full border p-2 rounded"></div>
 
         <div><label class="block text-gray-700 text-sm font-bold mb-2">المسار</label><input type="text" name="itinerary" class="w-full border p-2 rounded"></div>
-        <div><label class="block text-gray-700 text-sm font-bold mb-2">وسيلة النقل</label><input type="text" name="transport_mode" class="w-full border p-2 rounded"></div>
         <div>
-            <label class="block text-gray-700 text-sm font-bold mb-2">المنطقة</label>
-            <select name="region" id="region" class="w-full border p-2 rounded bg-white">
-                <option value="شمال">شمال</option>
-                <option value="جنوب">جنوب</option>
+            <label class="block text-gray-700 text-sm font-bold mb-2">وسيلة النقل</label>
+            <select name="transport_mode" class="w-full border p-2 rounded bg-white">
+                <option value="سيارة إدارية">سيارة إدارية</option>
+                <option value="سيارة شخصية">سيارة شخصية</option>
+                <option value="سيارة أجرة">سيارة أجرة</option>
+                <option value="حافلة">حافلة</option>
+                <option value="قطار">قطار</option>
+                <option value="طائرة">طائرة</option>
             </select>
         </div>
+
+        <div>
+            <label class="block text-gray-700 text-sm font-bold mb-2">الولاية الوجهة</label>
+            <select name="wilaya" id="wilaya" class="w-full border p-2 rounded bg-white" onchange="updateRegion()">
+                <!-- Populated by JS -->
+            </select>
+        </div>
+        <div>
+            <label class="block text-gray-700 text-sm font-bold mb-2">المنطقة (تلقائي)</label>
+            <input type="text" name="region" id="region" readonly class="w-full border p-2 rounded bg-gray-100 text-gray-700">
+        </div>
+        <div>
+            <label class="block text-gray-700 text-sm font-bold mb-2">المسافة (كم)</label>
+            <input type="number" name="distance_km" id="distance_km" step="0.01" class="w-full border p-2 rounded" placeholder="مثال: 60" oninput="calculate()">
+        </div>
+
 
         <div><label class="block text-gray-700 text-sm font-bold mb-2">الباب المالي</label><input type="text" name="budget_chapter" class="w-full border p-2 rounded"></div>
         <div><label class="block text-gray-700 text-sm font-bold mb-2">المادة</label><input type="text" name="budget_article" class="w-full border p-2 rounded"></div>
@@ -44,18 +72,14 @@
 
         <div>
             <label class="block text-gray-700 text-sm font-bold mb-2">تاريخ الذهاب (DD-MM-YYYY HH:MM)</label>
-            <input type="text" name="departure_datetime" id="dep" required class="w-full border p-2 rounded" placeholder="01-05-2026 08:00">
+            <input type="text" name="departure_datetime" id="dep" required class="w-full border p-2 rounded" placeholder="01-05-2026 08:00" oninput="calculate()">
         </div>
         <div>
             <label class="block text-gray-700 text-sm font-bold mb-2">تاريخ الإياب (DD-MM-YYYY HH:MM)</label>
-            <input type="text" name="return_datetime" id="ret" required class="w-full border p-2 rounded" placeholder="03-05-2026 16:00">
+            <input type="text" name="return_datetime" id="ret" required class="w-full border p-2 rounded" placeholder="03-05-2026 16:00" oninput="calculate()">
         </div>
 
-        <div class="flex items-end">
-            <button type="button" onclick="calculate()" class="w-full bg-yellow-500 hover:bg-yellow-600 text-white font-bold py-2 px-4 rounded">
-                معاينة الحساب
-            </button>
-        </div>
+
 
         <!-- Preview Result -->
         <div class="col-span-1 md:col-span-3 bg-blue-50 p-4 rounded text-blue-900 hidden" id="calcResult"></div>
@@ -96,7 +120,7 @@
                     {{ m['distance_km'] }}<br>{{ m['departure_datetime'] }}
                 </td>
                 <td class="px-5 py-5 border-b text-sm font-bold text-green-700">
-                    {{ m['nights_count'] }} دج<br><span class="text-xs text-gray-500">{{ m[13] }} وجبة, {{ m['meals_count'] }} ليلة</span>
+                    {{ m['total_amount'] }} دج<br><span class="text-xs text-gray-500">{{ m['meals_count'] }} وجبة, {{ m['nights_count'] }} ليلة</span>
                 </td>
                 <td class="px-5 py-5 border-b text-sm text-center">
                     <form method="POST" action="{{ url_for('missions') }}" onsubmit="return confirm('تأكيد الحذف؟');">
@@ -109,24 +133,112 @@
             </tr>
             {% endfor %}
             {% if not missions %}
-            <tr><td colspan="5" class="p-4 text-center text-gray-500">لا توجد مهمات مسجلة لهذا الموظف.</td></tr>
+            <tr><td colspan="4" class="p-4 text-center text-gray-500">لا توجد مهمات مسجلة لهذا الموظف.</td></tr>
             {% endif %}
         </tbody>
     </table>
 </div>
 
+
 <script>
+const wilayas = [
+    {id: 1, name: 'أدرار', region: 'جنوب'},
+    {id: 2, name: 'الشلف', region: 'شمال'},
+    {id: 3, name: 'الأغواط', region: 'جنوب'},
+    {id: 4, name: 'أم البواقي', region: 'شمال'},
+    {id: 5, name: 'باتنة', region: 'شمال'},
+    {id: 6, name: 'بجاية', region: 'شمال'},
+    {id: 7, name: 'بسكرة', region: 'جنوب'},
+    {id: 8, name: 'بشار', region: 'جنوب'},
+    {id: 9, name: 'البليدة', region: 'شمال'},
+    {id: 10, name: 'البويرة', region: 'شمال'},
+    {id: 11, name: 'تمنراست', region: 'جنوب'},
+    {id: 12, name: 'تبسة', region: 'شمال'},
+    {id: 13, name: 'تلمسان', region: 'شمال'},
+    {id: 14, name: 'تيارت', region: 'شمال'},
+    {id: 15, name: 'تيزي وزو', region: 'شمال'},
+    {id: 16, name: 'الجزائر', region: 'شمال'},
+    {id: 17, name: 'الجلفة', region: 'جنوب'},
+    {id: 18, name: 'جيجل', region: 'شمال'},
+    {id: 19, name: 'سطيف', region: 'شمال'},
+    {id: 20, name: 'سعيدة', region: 'شمال'},
+    {id: 21, name: 'سكيكدة', region: 'شمال'},
+    {id: 22, name: 'سيدي بلعباس', region: 'شمال'},
+    {id: 23, name: 'عنابة', region: 'شمال'},
+    {id: 24, name: 'قالمة', region: 'شمال'},
+    {id: 25, name: 'قسنطينة', region: 'شمال'},
+    {id: 26, name: 'المدية', region: 'شمال'},
+    {id: 27, name: 'مستغانم', region: 'شمال'},
+    {id: 28, name: 'المسيلة', region: 'شمال'},
+    {id: 29, name: 'معسكر', region: 'شمال'},
+    {id: 30, name: 'ورقلة', region: 'جنوب'},
+    {id: 31, name: 'وهران', region: 'شمال'},
+    {id: 32, name: 'البيض', region: 'جنوب'},
+    {id: 33, name: 'إليزي', region: 'جنوب'},
+    {id: 34, name: 'برج بوعريريج', region: 'شمال'},
+    {id: 35, name: 'بومرداس', region: 'شمال'},
+    {id: 36, name: 'الطارف', region: 'شمال'},
+    {id: 37, name: 'تندوف', region: 'جنوب'},
+    {id: 38, name: 'تيسمسيلت', region: 'شمال'},
+    {id: 39, name: 'الوادي', region: 'جنوب'},
+    {id: 40, name: 'خنشلة', region: 'شمال'},
+    {id: 41, name: 'سوق أهراس', region: 'شمال'},
+    {id: 42, name: 'تيبازة', region: 'شمال'},
+    {id: 43, name: 'ميلة', region: 'شمال'},
+    {id: 44, name: 'عين الدفلى', region: 'شمال'},
+    {id: 45, name: 'النعامة', region: 'جنوب'},
+    {id: 46, name: 'عين تموشنت', region: 'شمال'},
+    {id: 47, name: 'غرداية', region: 'جنوب'},
+    {id: 48, name: 'غليزان', region: 'شمال'},
+    {id: 49, name: 'تيميمون', region: 'جنوب'},
+    {id: 50, name: 'برج باجي مختار', region: 'جنوب'},
+    {id: 51, name: 'أولاد جلال', region: 'جنوب'},
+    {id: 52, name: 'بني عباس', region: 'جنوب'},
+    {id: 53, name: 'إن صالح', region: 'جنوب'},
+    {id: 54, name: 'إن قزام', region: 'جنوب'},
+    {id: 55, name: 'تقرت', region: 'جنوب'},
+    {id: 56, name: 'جانت', region: 'جنوب'},
+    {id: 57, name: 'المغير', region: 'جنوب'},
+    {id: 58, name: 'المنيعة', region: 'جنوب'}
+];
+
+document.addEventListener("DOMContentLoaded", function() {
+    const sel = document.getElementById("wilaya");
+    if(sel) {
+        wilayas.forEach(w => {
+            let opt = document.createElement("option");
+            opt.value = w.name;
+            opt.text = w.id + " - " + w.name;
+            opt.dataset.region = w.region;
+            sel.appendChild(opt);
+        });
+        updateRegion();
+    }
+});
+
+function updateRegion() {
+    const sel = document.getElementById("wilaya");
+    const regInput = document.getElementById("region");
+    if(sel && regInput) {
+        const opt = sel.options[sel.selectedIndex];
+        regInput.value = opt.dataset.region;
+        calculate();
+    }
+}
+
 function calculate() {
     const dep = document.getElementById('dep').value;
     const ret = document.getElementById('ret').value;
     const reg = document.getElementById('region').value;
+    const cat = document.getElementById('emp_category') ? document.getElementById('emp_category').value : '1-10';
+    const dist = document.getElementById('distance_km') ? document.getElementById('distance_km').value : 0;
 
-    if(!dep || !ret) { alert("أدخل تواريخ الذهاب والإياب أولاً"); return; }
+    if(!dep || !ret || dep.length < 16 || ret.length < 16) { document.getElementById("calcResult").classList.add("hidden"); return; }
 
     fetch('/calc_preview', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ dep: dep, ret: ret, reg: reg })
+        body: JSON.stringify({ dep: dep, ret: ret, reg: reg, cat: cat, dist: dist })
     })
     .then(res => res.json())
     .then(data => {
@@ -136,7 +248,7 @@ function calculate() {
                          <strong>بالحروف:</strong> ${data.text}`;
         div.classList.remove('hidden');
     })
-    .catch(err => alert('خطأ في صيغة التاريخ. يجب أن تكون DD-MM-YYYY HH:MM'));
+    .catch(err => { document.getElementById("calcResult").classList.add("hidden"); });
 }
 </script>
 {% endif %}

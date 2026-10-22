@@ -229,3 +229,39 @@ def get_stats():
 if __name__ == "__main__":
     init_db()
     print("Database initialized.")
+
+def get_reports():
+    conn = get_connection()
+    conn.row_factory = sqlite3.Row
+    cursor = conn.cursor()
+
+    # Summary by employee
+    cursor.execute('''
+        SELECT e.full_name, e.department,
+               COUNT(m.id) as total_missions,
+               SUM(m.meals_count) as total_meals,
+               SUM(m.nights_count) as total_nights,
+               SUM(m.total_amount) as total_spent
+        FROM employees e
+        LEFT JOIN missions m ON e.id = m.employee_id
+        GROUP BY e.id
+        ORDER BY total_spent DESC
+    ''')
+    emp_stats = cursor.fetchall()
+
+    # Summary by department
+    cursor.execute('''
+        SELECT e.department,
+               COUNT(m.id) as total_missions,
+               SUM(m.meals_count) as total_meals,
+               SUM(m.nights_count) as total_nights,
+               SUM(m.total_amount) as total_spent
+        FROM employees e
+        INNER JOIN missions m ON e.id = m.employee_id
+        GROUP BY e.department
+        ORDER BY total_spent DESC
+    ''')
+    dept_stats = cursor.fetchall()
+
+    conn.close()
+    return emp_stats, dept_stats

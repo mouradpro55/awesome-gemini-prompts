@@ -87,8 +87,8 @@ def generate_pdf_report(employee, missions, output_path, tafqeet_text):
 
     for m in missions[:10]: # Max 10 missions
         try:
-            d_date, d_time = m['departure_datetime'].split(' ')[0], m['departure_datetime'].split(' ')[1]
-            r_date, r_time = m['return_datetime'].split(' ')[0], m['return_datetime'].split(' ')[1]
+            d_date, d_time = str(m['departure_datetime']).split(' ')[0], str(m['departure_datetime']).split(' ')[1]
+            r_date, r_time = str(m['return_datetime']).split(' ')[0], str(m['return_datetime']).split(' ')[1]
         except:
             d_date = d_time = r_date = r_time = ""
 
